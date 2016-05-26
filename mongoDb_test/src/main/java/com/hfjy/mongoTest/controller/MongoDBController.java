@@ -69,13 +69,14 @@ public class MongoDBController {
 		initial.put("students", new HashMap<String, Object>());
 		coMap.put("initial", initial);
 		coMap.put("cond", new HashMap<String,Object>());
-		
+		List<Object> data=new ArrayList<>();
 		try {
-			List<Object> data =mongoDBService.groupByLessonCount(coMap, "lessonCountLog");
-			return data;
+			data =mongoDBService.groupByLessonCount(coMap, "lessonCountLog");
 		} catch (Exception e) {
-			return e.getMessage();
+			log.debug(e.getMessage());
+			e.getMessage();
 		}
+		return data;
 	}
 	/**
 	 * 查询
