@@ -1,0 +1,57 @@
+package com.hfjy.mongoTest.service;
+
+import java.util.List;
+import java.util.Map;
+
+import com.hfjy.mongoTest.entity.RoomEventDetail;
+import com.hfjy.mongoTest.entity.RoomEventEntity;
+import com.hfjy.mongoTest.entity.RtcEventDetail;
+import com.hfjy.mongoTest.entity.RtcEventEntity;
+
+public interface MongoDBService {
+	/**
+	 * 
+	 * @param condition
+	 * @param collectionName
+	 * @return
+	 * @throws Exception
+	 */
+	List<RtcEventDetail> queryRtcEventDetail(Map<String,Object> condition,String collectionName) throws Exception;
+	
+	/**
+	 * TODO(查询RoomEvent详情信息)
+	 * @author: no_relax 
+	 * @Title: queryRoomEventDetail
+	 * @param condition
+	 * @param collectionName
+	 * @return List<RoomEventDetail>
+	 * @throws Exception 
+	 * @since Vphone1.3.0
+	*/
+	List<RoomEventDetail> queryRoomEventDetail(Map<String,Object> condition,String collectionName)throws Exception;
+	
+	/**
+	 * 
+	 * @param condition
+	 * @param collectionName
+	 * @return
+	 * @throws Exception
+	 */
+	List<Object> groupByLessonCount(Map<String,Object> condition,String collectionName) throws Exception;
+	/**
+	 * 根据RoomId 查询 数据
+	 * @param condition：需要查询使用的 roomId 和 status
+	 * @param collectionName 表名
+	 * @return
+	 * @throws Exception
+	 */
+	List<RoomEventEntity> groupRoomEvent(Map<String,Object> condition,String collectionName)throws Exception;
+	/**
+	 * 根据RoomId查询数据
+	 * @param condition
+	 * @param collectionName
+	 * @return
+	 * @throws Exception
+	 */
+	List<RtcEventEntity> queryRtcEvent(Map<String,Object> condition,String collectionName)throws Exception;
+}
