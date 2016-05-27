@@ -118,6 +118,7 @@ public class MongoDBServiceImpl implements MongoDBService{
 			}
 			//根据roomId查询，cond：条件查询map集合
 			Map<String,Object> cond = new HashMap<String, Object>();
+			cond.put("status", "2");
 			if(condition.get("roomId")!=null){
 				cond.put("roomId",condition.get("roomId"));
 			}

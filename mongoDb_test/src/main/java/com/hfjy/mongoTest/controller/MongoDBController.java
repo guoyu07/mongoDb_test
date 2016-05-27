@@ -107,8 +107,11 @@ public class MongoDBController {
 				coMap.put("roomId", roomIdStr);
 				coMap.put("weekStatus",weekStatus);
 				coMap.remove("userId");
-				RoomEventEntity roomEventEntity =mongoDBService.groupRoomEvent(coMap, "RoomEvent").get(0);
-				data.add(roomEventEntity);
+				List<RoomEventEntity> events = mongoDBService.groupRoomEvent(coMap, "RoomEvent");
+				if (events!=null&&events.size()>0) {
+					RoomEventEntity roomEventEntity =events.get(0);
+					data.add(roomEventEntity);
+				}
 			}
 		}else {
 			coMap.put("conditions", true);
