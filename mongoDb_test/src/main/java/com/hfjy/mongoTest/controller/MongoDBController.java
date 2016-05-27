@@ -86,22 +86,34 @@ public class MongoDBController {
 	@RequestMapping("groupRoomEvent")
 	public String groupRoomEvent(@RequestParam(required =false,value="roomId")String roomId,Model model,
 			@RequestParam(required =false,value="weekStatus")String weekStatus,
-			@RequestParam(required=false,value="userId") String userId){
+			@RequestParam(required=false,value="userId") String userId,
+			@RequestParam(required=false,value="optType") String optType){
 		Map<String,Object> coMap = new HashMap<String, Object>();
 		if(StringUtils.isNotEmpty(roomId)){
 			coMap.put("roomId", roomId);
 		}
-		if (StringUtils.isNotEmpty(weekStatus)) {
-			coMap.put("weekStatus", weekStatus);
-		}else{
-			coMap.put("weekStatus", "-1");
-		}
+		//为空时，设置为默认值为1，上周
+		weekStatus=StringUtils.isNotEmpty(weekStatus)?weekStatus:"1";
+		coMap.put("weekStatus", weekStatus);
+		List<RoomEventEntity> data=new ArrayList<>();
+		try {
+			//如果userId不为空，表示以userId维度查询，需要另外处理
 		if (StringUtils.isNotEmpty(userId)) {
 			coMap.put("userId", userId);
+			coMap.remove("weekStatus");
+			//根据用户的userId获取所有的roomId
+			List<String> roomIds = mongoDBService.distinctQueryRoomId(coMap, "RoomEvent");
+			for (String roomIdStr : roomIds) {
+				coMap.put("roomId", roomIdStr);
+				coMap.put("weekStatus",weekStatus);
+				coMap.remove("userId");
+				RoomEventEntity roomEventEntity =mongoDBService.groupRoomEvent(coMap, "RoomEvent").get(0);
+				data.add(roomEventEntity);
+			}
+		}else {
+			coMap.put("conditions", true);
+			data =mongoDBService.groupRoomEvent(coMap, "RoomEvent");
 		}
-		coMap.put("conditions", true);
-		try {
-			List<RoomEventEntity> data =mongoDBService.groupRoomEvent(coMap, "RoomEvent");
 			model.addAttribute("roomEvents", data);
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -101,10 +101,10 @@ public class MongoDBServiceImpl implements MongoDBService{
 				initial.put("lessonTimes", new HashMap<String,Object>());
 				//承载用户的userId
 				initial.put("userIds", new HashMap<String,Object>());//key-userType,value-userId
-				initial.put("studentId", new String());
-				initial.put("teacherId", new String());
-				initial.put("studentName", new String());
-				initial.put("teacherName", new String());
+				initial.put("studentId","");
+				initial.put("teacherId", "");
+				initial.put("studentName", "");
+				initial.put("teacherName", "");
 				initial.put("courseName", new String());
 				initial.put("teaEnterTimes", 0);
 				initial.put("teaExitTimes", 0);
@@ -311,5 +311,16 @@ public class MongoDBServiceImpl implements MongoDBService{
 		}
 		List<RoomEventDetail> roomEventDetails = (List<RoomEventDetail>) mongoDBManager.find(cond, RoomEventDetail.class);
 		return roomEventDetails;
+	}
+
+	@Override
+	public List<String> distinctQueryRoomId(Map<String, Object> condition, String collectionName) throws Exception {
+		//校验
+		if(StringUtils.isEmpty(collectionName)){
+			throw new Exception("没有表信息");
+		}
+		mongoDBManager =new MongoDBManager(dataBase, collectionName);
+		Collection<String> distinctQuery = mongoDBManager.distinctQuery("roomId", condition,String.class);
+		return (List<String>) distinctQuery;
 	}
 }

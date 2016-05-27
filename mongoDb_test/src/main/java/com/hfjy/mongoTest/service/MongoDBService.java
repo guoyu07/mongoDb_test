@@ -54,4 +54,5 @@ public interface MongoDBService {
 	 * @throws Exception
 	 */
 	List<RtcEventEntity> queryRtcEvent(Map<String,Object> condition,String collectionName)throws Exception;
-}
+	List<String> distinctQueryRoomId(Map<String,Object> condition,String collectionName)throws Exception;
+} 

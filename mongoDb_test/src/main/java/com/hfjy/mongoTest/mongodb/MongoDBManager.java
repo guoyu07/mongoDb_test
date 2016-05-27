@@ -16,6 +16,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.hfjy.mongoTest.bean.Condition;
 import com.hfjy.mongoTest.bean.OperationType;
 import com.hfjy.mongoTest.utils.BeanConverterUtils;
+import com.hfjy.mongoTest.utils.StringUtils;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
@@ -371,6 +372,31 @@ public class MongoDBManager {
 		}
 		return null;
 	} 
+	
+	@SuppressWarnings("all")
+	public <T> Collection<T> distinctQuery(String distinctName,Map<String, Object> condition,Class<T> cls){
+		try {
+			if (StringUtils.isEmpty(distinctName)) {
+				throw new Exception(" distinctName 不能为空！");
+			}
+			Collection<T> t = new LinkedList<T>();
+			List list = new ArrayList<>();
+			if (condition!=null&&!condition.isEmpty()) {
+				list = dbCollection.distinct(distinctName, new BasicDBObject(condition));
+			}else {
+				list = dbCollection.distinct(distinctName);
+			}
+			Iterator iterator = list.iterator();
+			while(iterator.hasNext()){
+				T bean= cls.newInstance();
+				t.add((T)iterator.next());
+			}
+			return t;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 
 	/**
 	 * 根据条件查询size
