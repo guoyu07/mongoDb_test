@@ -290,7 +290,8 @@ public class MongoDBServiceImpl implements MongoDBService{
 						for (int i = 0; i < sourceTimes.length; i++) {
 							String sourceName=sources[i];
 							if(i+1<=operateDesc.length){
-								sourceName=(operateDesc[i].equals("关闭")&&operateDesc[i+1].equals("打开"))?"QQ":sources[i];
+								//前一条记录为“关闭”，后一条记录为“打开”或“关闭”时，默认为QQ语音
+								sourceName=(operateDesc[i].equals("关闭")&&(operateDesc[i+1].equals("打开")||operateDesc[i+1].equals("关闭")))?"QQ":sources[i];
 							}
 							if(i==0){
 								sb.append(sourceName+"("+formatDouble(sourceTimes[i],1)+")");

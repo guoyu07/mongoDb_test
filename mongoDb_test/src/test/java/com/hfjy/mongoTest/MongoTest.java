@@ -77,7 +77,7 @@ public class MongoTest {
 	public void queryRtcEvent(){
 		Map<String,Object> coMap = new HashMap<String, Object>();
 //		coMap.put("weekStatus", "1");
-		coMap.put("roomId", "13512");
+		coMap.put("roomId", "13488");
 		try {
 			List<RtcEventEntity> queryRtcEvent = mongoDBService.queryRtcEvent(coMap, "RtcEvent");
 			System.out.println(JSON.toJSONString(queryRtcEvent, true));
