@@ -4,6 +4,7 @@ import java.math.RoundingMode;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -274,20 +275,33 @@ public class MongoDBServiceImpl implements MongoDBService{
 				//这是频道
 				if((null!=sources&&sources.length>0)&&(null!=sourceTimes && sourceTimes.length>0)&&(null!=operateDesc && operateDesc.length>0)){
 					StringBuilder sb = new StringBuilder();
-					for (int i = 0; i < sourceTimes.length; i++) {
-						String sourceName=sources[i];
-						if(i+1<=operateDesc.length){
-							sourceName=(operateDesc[i].equals("关闭")&&operateDesc[i+1].equals("打开"))?"QQ":sources[i];
-						}
-						if(i==0){
-							sb.append(sourceName+"("+formatDouble(sourceTimes[i],1)+")");
-						}else{
-							sb.append(","+sourceName+"("+formatDouble(sourceTimes[i],1)+")");
-						}
+					//判断operateDesc中只有一个“打开”或“关闭”
+					if (operateDesc.length==1&&operateDesc[0].equals("打开")) {
+						sb.append(sources[0]+"(120)");//默认120分钟
 						rtcEventEntity.setChannelInfo(sb.toString());
+						result.add(rtcEventEntity);
+						break;
+					}else if (operateDesc.length==1&&operateDesc[0].equals("关闭")) {
+						sb.append("没有使用语音！");
+						rtcEventEntity.setChannelInfo(sb.toString());
+						result.add(rtcEventEntity);
+						break;
+					}else {
+						for (int i = 0; i < sourceTimes.length; i++) {
+							String sourceName=sources[i];
+							if(i+1<=operateDesc.length){
+								sourceName=(operateDesc[i].equals("关闭")&&operateDesc[i+1].equals("打开"))?"QQ":sources[i];
+							}
+							if(i==0){
+								sb.append(sourceName+"("+formatDouble(sourceTimes[i],1)+")");
+							}else{
+								sb.append(","+sourceName+"("+formatDouble(sourceTimes[i],1)+")");
+							}
+							rtcEventEntity.setChannelInfo(sb.toString());
+						}
+						result.add(rtcEventEntity);
 					}
 				}
-				result.add(rtcEventEntity);
 			}
 		}
 		return result;

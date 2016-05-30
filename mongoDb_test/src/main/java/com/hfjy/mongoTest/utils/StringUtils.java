@@ -2,6 +2,9 @@ package com.hfjy.mongoTest.utils;
 
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
 public class StringUtils {
 
@@ -198,5 +201,24 @@ public class StringUtils {
 			}
 		}
 		return versionNum.toString().substring(1);
+	}
+	
+	/**
+	 * TODO(判断集合中的元素是否都相等)
+	 * @author: no_relax 
+	 * @Title: validateCollectionItemsIsSameOrNot
+	 * @param collection 集合
+	 * @param items 集合中的元素
+	 * @return  boolean
+	 * @since Vphone1.3.0
+	*/
+	public static <T> boolean  validateCollectionItemsIsSameOrNot(Collection<T> collection,T items){
+		Iterator<T> iterator = collection.iterator();
+		while(iterator.hasNext()){
+			if (!iterator.next().equals(items)) {
+				return false;
+			}
+		}
+		return true;
 	}
 }
