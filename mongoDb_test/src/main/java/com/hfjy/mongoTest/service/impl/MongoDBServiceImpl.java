@@ -272,13 +272,17 @@ public class MongoDBServiceImpl implements MongoDBService{
 				//操作详情描述
 				String[] operateDesc = rtcEventEntity.getOperateDesc();
 				//这是频道
-				if((null!=sources&&sources.length>0)&&(null!=sourceTimes && sourceTimes.length>0)){
+				if((null!=sources&&sources.length>0)&&(null!=sourceTimes && sourceTimes.length>0)&&(null!=operateDesc && operateDesc.length>0)){
 					StringBuilder sb = new StringBuilder();
 					for (int i = 0; i < sourceTimes.length; i++) {
+						String sourceName=sources[i];
+						if(i+1<=operateDesc.length){
+							sourceName=(operateDesc[i].equals("关闭")&&operateDesc[i+1].equals("打开"))?"QQ":sources[i];
+						}
 						if(i==0){
-							sb.append(sources[i]+"("+formatDouble(sourceTimes[i],1)+")");
+							sb.append(sourceName+"("+formatDouble(sourceTimes[i],1)+")");
 						}else{
-							sb.append(","+sources[i]+"("+formatDouble(sourceTimes[i],1)+")");
+							sb.append(","+sourceName+"("+formatDouble(sourceTimes[i],1)+")");
 						}
 						rtcEventEntity.setChannelInfo(sb.toString());
 					}
@@ -329,6 +333,6 @@ public class MongoDBServiceImpl implements MongoDBService{
 		return (List<String>) distinctQuery;
 	}
 	public static void main(String[] args) {
-		System.out.println(Long.parseLong("1461985409235")-Long.parseLong("1461985276139"));
+		System.out.println((Long.parseLong("1461989231508")-Long.parseLong("1461848247648"))/(1000*60));
 	}
 }
