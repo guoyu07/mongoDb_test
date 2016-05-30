@@ -125,6 +125,14 @@ public class MongoDBController {
 		return "modules/bi/bi";
 	}
 	
+	/**
+	 * TODO(group查询语音情况)
+	 * @author: no_relax 
+	 * @Title: groupRtcEvent
+	 * @param roomId 以roomId维度查询
+	 * @return Object
+	 * @since BI
+	*/
 	@RequestMapping("groupRtcEvent")
 	@ResponseBody
 	public Object groupRtcEvent(@RequestParam(required =false,value="roomId")String roomId){

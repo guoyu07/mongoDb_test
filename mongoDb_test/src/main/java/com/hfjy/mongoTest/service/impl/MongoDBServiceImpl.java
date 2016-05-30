@@ -226,6 +226,8 @@ public class MongoDBServiceImpl implements MongoDBService{
 			}
 			if(condition.get("initial")==null){
 				Map<String,Object> initial = new HashMap<String, Object>();
+				//频道切换详情描述
+				initial.put("operateDesc", new String[]{});
 				initial.put("openCount", 0);
 				initial.put("cancelCount", 0);
 				initial.put("channelSwitch", new String[]{});
@@ -242,11 +244,11 @@ public class MongoDBServiceImpl implements MongoDBService{
 			condition.put("cond", cond);
 			//reduce
 			sb.append("function(doc,prev){")
-				.append("prev.fristTime++;if(prev.fristTime==1){ prev.last_time=doc.insertTime; }")
-					.append(" if(doc.status=='1' &&!doc.isChange){ prev.openCount++;")
-						.append(" }else if(doc.status=='0' &&!doc.isChange){ prev.cancelCount++;")
-							.append(" }else if(doc.status=='1' &&doc.isChange){  prev.channelSwitchTimes.push((doc.insertTime-prev.last_time)/(1000*60)); ")
-									 	.append(" prev.last_time=doc.insertTime;  prev.channelSwitch.push(doc.source);  } }");
+				.append("prev.fristTime++;if(prev.fristTime==1){ prev.lastTime=doc.insertTime; }")
+					.append("if(prev.fristTime>=2){prev.channelSwitchTimes.push((doc.insertTime-prev.lastTime)/(1000*60)); prev.lastTime=doc.insertTime } ")
+					.append(" prev.channelSwitch.push(doc.source);prev.operateDesc.push(doc.desc);")
+					.append(" if(doc.status=='1' &&!doc.isChange){ prev.openCount++; ")
+						.append(" }else if(doc.status=='0' &&!doc.isChange){ prev.cancelCount++;} }");
 			//执行
 			List<RtcEventEntity> data=(List<RtcEventEntity>) mongoDBManager.group(condition, sb.toString(), RtcEventEntity.class);
 			
@@ -267,10 +269,12 @@ public class MongoDBServiceImpl implements MongoDBService{
 			for (RtcEventEntity rtcEventEntity : data) {
 				String[] sources =rtcEventEntity.getChannelSwitch();
 				Double[] sourceTimes =rtcEventEntity.getChannelSwitchTimes();
+				//操作详情描述
+				String[] operateDesc = rtcEventEntity.getOperateDesc();
 				//这是频道
 				if((null!=sources&&sources.length>0)&&(null!=sourceTimes && sourceTimes.length>0)){
 					StringBuilder sb = new StringBuilder();
-					for (int i = 0; i < sources.length; i++) {
+					for (int i = 0; i < sourceTimes.length; i++) {
 						if(i==0){
 							sb.append(sources[i]+"("+formatDouble(sourceTimes[i],1)+")");
 						}else{
@@ -323,5 +327,8 @@ public class MongoDBServiceImpl implements MongoDBService{
 		mongoDBManager =new MongoDBManager(dataBase, collectionName);
 		Collection<String> distinctQuery = mongoDBManager.distinctQuery("roomId", condition,String.class);
 		return (List<String>) distinctQuery;
+	}
+	public static void main(String[] args) {
+		System.out.println(Long.parseLong("1461985409235")-Long.parseLong("1461985276139"));
 	}
 }

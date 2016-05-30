@@ -26,6 +26,11 @@ public class RtcEventEntity implements Serializable{
 	 * 切换频道使用时间
 	 */
 	private Double[] channelSwitchTimes;
+	
+	/*
+	 * 频道切换描述详情
+	 */
+	private String[] operateDesc;
 	/**
 	 * 最后一次切换时间
 	 */
@@ -75,6 +80,12 @@ public class RtcEventEntity implements Serializable{
 	}
 	public void setChannelSwitchTimes(Double[] channelSwitchTimes) {
 		this.channelSwitchTimes = channelSwitchTimes;
+	}
+	public String[] getOperateDesc() {
+		return operateDesc;
+	}
+	public void setOperateDesc(String[] operateDesc) {
+		this.operateDesc = operateDesc;
 	}
 	public Long getLastTime() {
 		return lastTime;
