@@ -163,22 +163,20 @@ public class MongoDBServiceImpl implements MongoDBService{
 			List<RoomEventEntity> data=(List<RoomEventEntity>) mongoDBManager.group(condition, sb.toString(), RoomEventEntity.class);
 			//遍历集合，获取每个房间的语音信息
 			Map<String, Object> coMap=new HashMap<>();
+			List<RtcEventEntity> rtcEventEntitys = this.queryRtcEvent(coMap, "RtcEvent");
 			for (RoomEventEntity roomEventEntity : data) {
-				coMap.put("roomId", roomEventEntity.getRoomId());
-				List<RtcEventEntity> rtcEventEntitys = this.queryRtcEvent(coMap, "RtcEvent");
+				//coMap.put("roomId", roomEventEntity.getRoomId());
 				if (rtcEventEntitys!=null&&rtcEventEntitys.size()>0) {
-					RtcEventEntity rtcEventEntity=rtcEventEntitys.get(0);
-					roomEventEntity.setOpenCount(rtcEventEntity.getOpenCount());
-					roomEventEntity.setCancelCount(rtcEventEntity.getCancelCount());
-					roomEventEntity.setChannelInfo(rtcEventEntity.getChannelInfo());
-					roomEventEntity.setChannelSwitchCount(rtcEventEntity.getChannelSwitch().length);
-					/*if (StringUtils.isNotEmpty(roomEventEntity.getUserIds().get("0"))) {
-						roomEventEntity.setStudentName(roomEventEntity.getUserIds().get("0").toString());
+					for (RtcEventEntity rtcEventEntity : rtcEventEntitys) {
+						if (rtcEventEntity.getRoomId().equals(roomEventEntity.getRoomId())) {
+							roomEventEntity.setOpenCount(rtcEventEntity.getOpenCount());
+							roomEventEntity.setCancelCount(rtcEventEntity.getCancelCount());
+							roomEventEntity.setChannelInfo(rtcEventEntity.getChannelInfo());
+							roomEventEntity.setChannelSwitchCount(rtcEventEntity.getChannelSwitch().length);
+							log.debug(roomEventEntity.getRoomId()+"--------->OpenCount-------->"+rtcEventEntity.getOpenCount()+"--------->CancelCount-------->"+rtcEventEntity.getCancelCount()+"------->ChannelInfo---->"+rtcEventEntity.getChannelInfo());
+							break;
+						}
 					}
-					if (StringUtils.isNotEmpty(roomEventEntity.getUserIds().get("1"))) {
-						roomEventEntity.setTeacherName(roomEventEntity.getUserIds().get("1").toString());
-					}*/
-					log.debug(roomEventEntity.getRoomId()+"--------->OpenCount-------->"+rtcEventEntity.getOpenCount()+"--------->CancelCount-------->"+rtcEventEntity.getCancelCount()+"------->ChannelInfo---->"+rtcEventEntity.getChannelInfo());
 				}
 			}
 			coMap=null;//置空，垃圾回收
@@ -221,7 +219,7 @@ public class MongoDBServiceImpl implements MongoDBService{
 		mongoDBManager =new MongoDBManager(dataBase, collectionName);
 		//条件和参数
 		StringBuffer sb =new StringBuffer();
-		if(null!=condition && condition.size()>0){
+		if(null!=condition){
 			if(condition.get("key")==null){
 				condition.put("key", "roomId");
 			}
