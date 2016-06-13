@@ -34,8 +34,8 @@ public class MongoDBServer {
 	// 从配置文件中获取属性值
 	private static String hosts = Config.get(prefix + "HOST", "192.168.0.206").trim();
 	private static String ports = Config.get(prefix + "PORT", "27017").trim();
-	private static String userNames = Config.get(prefix + "USER_NAME", "zjf").trim();
-	private static String pwds = Config.get(prefix + "PASSWORD", "zjf123456").trim();
+	private static String userNames = Config.get(prefix + "USER_NAME", "root").trim();
+	private static String pwds = Config.get(prefix + "PASSWORD", "hfmongotest123").trim();
 	private static String dataBases = Config.get(prefix + "DATABASE", "admin").trim();
 	private static String replSetName = Config.get(prefix + "REPL_SET_NAME", "").trim();
 	

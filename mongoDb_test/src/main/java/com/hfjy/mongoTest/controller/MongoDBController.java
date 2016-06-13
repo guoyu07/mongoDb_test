@@ -23,7 +23,7 @@ import com.hfjy.mongoTest.utils.DateUtils;
 import com.hfjy.mongoTest.utils.StringUtils;
 /**
  * mongoDB 查询的controller 
- * @author leo-zeng
+ * @author no_relax
  *
  */
 @Controller
@@ -59,6 +59,13 @@ public class MongoDBController {
 		return "modules/bi/detailInfoLogs";
 	}
 	
+	/**
+	 * TODO(group分组查询)
+	 * @author: no_relax 
+	 * @Title: group
+	 * @return Object
+	 * @since Vphone1.3.0
+	*/
 	@RequestMapping("group")
 	@ResponseBody
 	public Object group(){

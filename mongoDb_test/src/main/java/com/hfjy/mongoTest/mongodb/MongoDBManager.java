@@ -152,6 +152,7 @@ public class MongoDBManager {
 			}
 			return resultList;
 		} catch (Exception e) {
+			e.printStackTrace();
 			Log.error(e.getMessage(), e);
 		}
 		return null;
@@ -189,6 +190,7 @@ public class MongoDBManager {
 				}
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			Log.error(e.getMessage(), e);
 		}
 		return false;
@@ -215,6 +217,7 @@ public class MongoDBManager {
 					return false;
 				}
 			} catch (Exception e) {
+				e.printStackTrace();
 				throw new RuntimeException(e.getMessage());
 			} 
 		}

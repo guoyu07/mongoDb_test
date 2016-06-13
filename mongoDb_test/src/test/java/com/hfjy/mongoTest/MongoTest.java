@@ -46,23 +46,24 @@ import com.hfjy.mongoTest.service.MongoDBService;
 public class MongoTest {
 	@Autowired
 	private MongoDBService mongoDBService;
-	@Test
-	public void groupRoomEvent(){
-		Map<String,Object> coMap = new HashMap<String, Object>();
+
+	//@Test
+	public void groupRoomEvent() {
+		Map<String, Object> coMap = new HashMap<String, Object>();
 		coMap.put("weekStatus", "1");
-		coMap.put("roomId", "12663");
+		coMap.put("roomId", "13791");
 		try {
-			List<RoomEventEntity> data =mongoDBService.groupRoomEvent(coMap, "RoomEvent");
+			List<RoomEventEntity> data = mongoDBService.groupRoomEvent(coMap, "RoomEvent");
 			System.out.println(JSON.toJSONString(data, true));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 	}
-	
-	@Test
-	public void distinctQueryRoomId(){
-		Map<String,Object> coMap = new HashMap<String, Object>();
+
+	//@Test
+	public void distinctQueryRoomId() {
+		Map<String, Object> coMap = new HashMap<String, Object>();
 		coMap.put("userId", "22171");
 		try {
 			List<String> roomIds = mongoDBService.distinctQueryRoomId(coMap, "RoomEvent");
@@ -70,29 +71,30 @@ public class MongoTest {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 	}
-	
+
 	@Test
-	public void queryRtcEvent(){
-		Map<String,Object> coMap = new HashMap<String, Object>();
+	public void queryRtcEvent() {
+		Map<String, Object> coMap = new HashMap<String, Object>();
 //		coMap.put("weekStatus", "1");
-		coMap.put("roomId", "13488");
+//		coMap.put("roomId", "13791");
 		try {
 			List<RtcEventEntity> queryRtcEvent = mongoDBService.queryRtcEvent(coMap, "RtcEvent");
 			System.out.println(JSON.toJSONString(queryRtcEvent, true));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 	}
-	@Test
-	public void queryRoomUsersInfo() throws Exception{
-		Map<String,Object> condition = new HashMap<>();
-		Map<String,Object> cond = new HashMap<String, Object>();
-		Map<String,Object> initial = new HashMap<String, Object>();
-		//承载用户的userId
-		initial.put("userIds", new HashMap<String,Object>());//key-userType,value-userId
+
+	//@Test
+	public void queryRoomUsersInfo() throws Exception {
+		Map<String, Object> condition = new HashMap<>();
+		Map<String, Object> cond = new HashMap<String, Object>();
+		Map<String, Object> initial = new HashMap<String, Object>();
+		// 承载用户的userId
+		initial.put("userIds", new HashMap<String, Object>());// key-userType,value-userId
 		initial.put("studentId", new String());
 		initial.put("teacherId", new String());
 		initial.put("studentName", new String());
@@ -101,10 +103,10 @@ public class MongoTest {
 		condition.put("key", "roomId");
 		condition.put("initial", initial);
 		condition.put("cond", cond);
-//		System.out.println(JSON.toJSONString(condition, true));
-		//RoomEventEntity queryRoomUsersInfo = mongoDBService.queryRoomUsersInfo(condition, "RoomEvent");
-		//System.out.println(JSON.toJSONString(queryRoomUsersInfo, true));
+		// System.out.println(JSON.toJSONString(condition, true));
+		// RoomEventEntity queryRoomUsersInfo =
+		// mongoDBService.queryRoomUsersInfo(condition, "RoomEvent");
+		// System.out.println(JSON.toJSONString(queryRoomUsersInfo, true));
 	}
 
 }
-
