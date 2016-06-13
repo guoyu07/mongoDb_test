@@ -23,7 +23,7 @@ td {
 </style>
 </head>
 <body>
-	<h1 align="center">上课详情</h1>
+	<h1 align="center">语音详情</h1>
 	<table border="1" align="center">
 		<tr align="center">
 			<td>编号</td>
@@ -59,8 +59,7 @@ td {
 
 	</table>
 	<hr>
-	
-	<h1 align="center">语音详情</h1>
+	<h1 align="center">上课详情</h1>
 	<table border="1" align="center">
 		<tr align="center">
 			<td>编号</td>
