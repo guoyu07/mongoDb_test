@@ -99,8 +99,8 @@ public class MongoDBController {
 		if(StringUtils.isNotEmpty(roomId)){
 			coMap.put("roomId", roomId);
 		}
-		//为空时，设置为默认值为1，上周
-		weekStatus=StringUtils.isNotEmpty(weekStatus)?weekStatus:"1";
+		//为空时，设置为默认值为-1，上周
+		weekStatus=StringUtils.isNotEmpty(weekStatus)?weekStatus:"-1";
 		coMap.put("weekStatus", weekStatus);
 		List<RoomEventEntity> data=new ArrayList<>();
 		try {

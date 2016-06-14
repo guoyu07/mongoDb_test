@@ -283,18 +283,23 @@ public class MongoDBServiceImpl implements MongoDBService {
 					}
 					// 这是频道
 					if ((null != sources && sources.length > 0) && (null != sourceTimes && sourceTimes.length > 0)) {
-						for (int i = 0; i < sourceTimes.length; i++) {
-							String sourceName = sources[i];
-							if (i + 1 <= operateDesc.length) {
-								// 前一条记录为“关闭”，后一条记录为“打开”或“关闭”时，默认为QQ语音
-								sourceName = (operateDesc[i].equals("关闭") && (operateDesc[i + 1].equals("打开") || operateDesc[i + 1].equals("关闭"))) ? "QQ" : sources[i];
-							}
-							if (i == 0) {
-								sb.append(sourceName + "(" + formatDouble(sourceTimes[i], 1) + ")");
-							} else {
-								sb.append("," + sourceName + "(" + formatDouble(sourceTimes[i], 1) + ")");
-							}
+						if (operateDesc.length>1&&StringUtils.validateCollectionItemsIsSameOrNot(Arrays.asList(operateDesc), "关闭")) {
+							sb.append("没有使用语音！");
 							rtcEventEntity.setChannelInfo(sb.toString());
+						}else {
+							for (int i = 0; i < sourceTimes.length; i++) {
+								String sourceName = sources[i];
+								if (i + 1 <= operateDesc.length) {
+									// 前一条记录为“关闭”，后一条记录为“打开”或“关闭”时，默认为QQ语音
+									sourceName = (operateDesc[i].equals("关闭") && (operateDesc[i + 1].equals("打开") || operateDesc[i + 1].equals("关闭"))) ? "QQ" : sources[i];
+								}
+								if (i == 0) {
+									sb.append(sourceName + "(" + formatDouble(sourceTimes[i], 1) + ")");
+								} else {
+									sb.append("," + sourceName + "(" + formatDouble(sourceTimes[i], 1) + ")");
+								}
+								rtcEventEntity.setChannelInfo(sb.toString());
+							}
 						}
 						result.add(rtcEventEntity);
 					}
