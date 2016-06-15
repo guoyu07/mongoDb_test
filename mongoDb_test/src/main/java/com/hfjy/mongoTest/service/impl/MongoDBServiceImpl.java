@@ -196,11 +196,7 @@ public class MongoDBServiceImpl implements MongoDBService {
 				Collections.sort(list);
 				long startTime = Long.parseLong(list.get(0));
 				long endTime = Long.parseLong(list.get(list.size() - 1));
-				roomEventEntity.setLessionTimeRegion(sdf.format(
-						new Date(startTime))/*
-											 * +"（"+DateUtils.formatDuring(
-											 * endTime-startTime)+"）"
-											 */);
+				roomEventEntity.setLessionTimeRegion(sdf.format(new Date(startTime))+"-"+DateUtils.formatDate(new Date(endTime), "HH:mm"));
 				roomEventEntity.setLessonTimes(null);
 				data.add(roomEventEntity);
 			}
@@ -275,12 +271,12 @@ public class MongoDBServiceImpl implements MongoDBService {
 						rtcEventEntity.setChannelInfo(sb.toString());
 						result.add(rtcEventEntity);
 						// break;
-					} else if (operateDesc.length == 1 && operateDesc[0].equals("关闭")) {
+					} /*else if (operateDesc.length == 1 && operateDesc[0].equals("关闭")) {
 						sb.append("没有使用语音！");
 						rtcEventEntity.setChannelInfo(sb.toString());
 						result.add(rtcEventEntity);
 						// break;
-					}
+					}*/
 					// 这是频道
 					if ((null != sources && sources.length > 0) && (null != sourceTimes && sourceTimes.length > 0)) {
 						if (operateDesc.length>1&&StringUtils.validateCollectionItemsIsSameOrNot(Arrays.asList(operateDesc), "关闭")) {
