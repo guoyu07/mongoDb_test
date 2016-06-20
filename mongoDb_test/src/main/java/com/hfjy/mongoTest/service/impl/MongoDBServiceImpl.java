@@ -158,6 +158,16 @@ public class MongoDBServiceImpl implements MongoDBService {
 			List<RtcEventEntity> rtcEventEntitys = this.queryRtcEvent(coMap, "RtcEvent");
 			for (RoomEventEntity roomEventEntity : data) {
 				// coMap.put("roomId", roomEventEntity.getRoomId());
+				if(roomEventEntity.getStudentName() == null || roomEventEntity.getTeacherName() == null ){
+					data.remove(roomEventEntity);
+					continue;
+				}
+				
+				if(roomEventEntity.getStudentName().contains("测试老师") || roomEventEntity.getStudentName().contains("测试同学")){
+					data.remove(roomEventEntity);
+					continue;
+				}
+				
 				if (rtcEventEntitys != null && rtcEventEntitys.size() > 0) {
 					for (RtcEventEntity rtcEventEntity : rtcEventEntitys) {
 						if (rtcEventEntity.getRoomId().equals(roomEventEntity.getRoomId())) {
