@@ -54,5 +54,27 @@ public interface MongoDBService {
 	 * @throws Exception
 	 */
 	List<RtcEventEntity> queryRtcEvent(Map<String,Object> condition,String collectionName)throws Exception;
+	/**
+	 * TODO(去重查询roomId集合)
+	 * @author: no_relax 
+	 * @Title: distinctQueryRoomId
+	 * @param condition
+	 * @param collectionName
+	 * @return List<String>
+	 * @throws Exception 
+	 * @since Vphone1.3.0
+	*/
 	List<String> distinctQueryRoomId(Map<String,Object> condition,String collectionName)throws Exception;
+	
+	/**
+	 * TODO(获取房间中所有的用户信息)
+	 * @author: no_relax 
+	 * @Title: findUsersInfoByRoomId
+	 * @param condition
+	 * @param collectionName
+	 * @return  RoomEventEntity
+	 * @throws Exception 
+	 * @since Vphone1.3.0
+	*/
+	RoomEventEntity findUsersInfoByRoomId(Map<String, Object> condition,String collectionName)throws Exception;
 } 
