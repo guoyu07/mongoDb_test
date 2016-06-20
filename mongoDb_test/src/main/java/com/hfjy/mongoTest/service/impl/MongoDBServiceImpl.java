@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -156,15 +157,31 @@ public class MongoDBServiceImpl implements MongoDBService {
 			// 遍历集合，获取每个房间的语音信息
 			Map<String, Object> coMap = new HashMap<>();
 			List<RtcEventEntity> rtcEventEntitys = this.queryRtcEvent(coMap, "RtcEvent");
-			for (RoomEventEntity roomEventEntity : data) {
-				// coMap.put("roomId", roomEventEntity.getRoomId());
+			Map<String, Object> conditionForQueryUsers=new HashMap<>();
+			Iterator<RoomEventEntity> roomEventEntitys = data.iterator();
+			while (roomEventEntitys.hasNext()) {
+				RoomEventEntity roomEventEntity = roomEventEntitys.next();
 				if (rtcEventEntitys != null && rtcEventEntitys.size() > 0) {
 					for (RtcEventEntity rtcEventEntity : rtcEventEntitys) {
 						if (rtcEventEntity.getRoomId().equals(roomEventEntity.getRoomId())) {
+							conditionForQueryUsers.put("roomId", rtcEventEntity.getRoomId());
+							RoomEventEntity  tempRoomEventEntity= findUsersInfoByRoomId(conditionForQueryUsers, "RoomEvent");
+							if (tempRoomEventEntity==null||tempRoomEventEntity.getStudentId()==null||tempRoomEventEntity.getTeacherId()==null) {
+								roomEventEntitys.remove();
+								break;
+							}
+							if (tempRoomEventEntity.getTeacherName().indexOf("测试")>-1||tempRoomEventEntity.getStudentName().indexOf("测试")>-1) {
+								roomEventEntitys.remove();
+								break;
+							}
 							roomEventEntity.setOpenCount(rtcEventEntity.getOpenCount());
 							roomEventEntity.setCancelCount(rtcEventEntity.getCancelCount());
 							roomEventEntity.setChannelInfo(rtcEventEntity.getChannelInfo());
 							roomEventEntity.setChannelSwitchCount(rtcEventEntity.getChannelSwitch().length);
+							roomEventEntity.setStudentId(tempRoomEventEntity.getStudentId());
+							roomEventEntity.setStudentName(tempRoomEventEntity.getStudentName());
+							roomEventEntity.setTeacherId(tempRoomEventEntity.getTeacherId());
+							roomEventEntity.setTeacherName(tempRoomEventEntity.getTeacherName());
 							log.debug(roomEventEntity.getRoomId() + "--------->OpenCount-------->" + rtcEventEntity.getOpenCount() + "--------->CancelCount-------->" + rtcEventEntity.getCancelCount()
 									+ "------->ChannelInfo---->" + rtcEventEntity.getChannelInfo());
 							break;
@@ -350,5 +367,42 @@ public class MongoDBServiceImpl implements MongoDBService {
 
 	public static void main(String[] args) {
 		System.out.println((Long.parseLong("1461989231508") - Long.parseLong("1461848247648")) / (1000 * 60));
+	}
+
+	@Override
+	public RoomEventEntity findUsersInfoByRoomId(Map<String, Object> condition, String collectionName) throws Exception {
+				// 校验
+				if (StringUtils.isEmpty(collectionName)) {
+					throw new Exception("没有表信息");
+				}
+				mongoDBManager = new MongoDBManager(dataBase, collectionName);
+				// 条件和参数
+				StringBuffer sb = new StringBuffer();
+				if (null != condition) {
+					if (condition.get("key") == null) {
+						condition.put("key", "roomId");
+					}
+					if (condition.get("initial") == null) {
+						Map<String, Object> initial = new HashMap<String, Object>();
+						initial.put("studentId", new String[] {});
+						initial.put("studentName", new String[] {});
+						initial.put("teacherId", new String[] {});
+						initial.put("teacherName", new String[] {});
+						condition.put("initial", initial);
+					}
+					// 根据roomId查询
+					Map<String, Object> cond = new HashMap<String, Object>();
+					if (condition.get("roomId") != null) {
+						cond.put("roomId", condition.get("roomId"));
+					}
+					condition.put("cond", cond);
+					sb.append("function(doc,prev){ if(doc.userType=='1'){prev.teacherId=doc.userId;prev.teacherName=doc.userName;  ");
+					sb.append(" }else if(doc.userType=='0'){ prev.studentId=doc.userId;prev.studentName=doc.userName;}} ");
+					List<RoomEventEntity> roomEventEntitys = (List<RoomEventEntity>) mongoDBManager.group(condition, sb.toString(), RoomEventEntity.class);
+					if (roomEventEntitys!=null&&roomEventEntitys.size()>0) {
+						return roomEventEntitys.get(0);
+					}
+				}
+				return null;
 	}
 }

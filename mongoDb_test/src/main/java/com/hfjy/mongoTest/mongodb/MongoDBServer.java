@@ -32,10 +32,10 @@ public class MongoDBServer {
 	private static MongoClient mongoClient = null;
 	// 类初始化时，自行实例化，饿汉式单例模式
 	// 从配置文件中获取属性值
-	private static String hosts = Config.get(prefix + "HOST", "192.168.0.206").trim();
+	private static String hosts = Config.get(prefix + "HOST", "121.40.140.24").trim();
 	private static String ports = Config.get(prefix + "PORT", "27017").trim();
-	private static String userNames = Config.get(prefix + "USER_NAME", "root").trim();
-	private static String pwds = Config.get(prefix + "PASSWORD", "hfmongotest123").trim();
+	private static String userNames = Config.get(prefix + "USER_NAME", "lxh").trim();
+	private static String pwds = Config.get(prefix + "PASSWORD", "HV2FnMpy3g").trim();
 	private static String dataBases = Config.get(prefix + "DATABASE", "admin").trim();
 	private static String replSetName = Config.get(prefix + "REPL_SET_NAME", "").trim();
 	

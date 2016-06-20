@@ -51,7 +51,7 @@ public class MongoTest {
 	public void groupRoomEvent() {
 		Map<String, Object> coMap = new HashMap<String, Object>();
 		coMap.put("weekStatus", "1");
-		coMap.put("roomId", "13791");
+		coMap.put("roomId", "13255");
 		try {
 			List<RoomEventEntity> data = mongoDBService.groupRoomEvent(coMap, "RoomEvent");
 			System.out.println(JSON.toJSONString(data, true));
@@ -74,7 +74,7 @@ public class MongoTest {
 
 	}
 
-	@Test
+//	@Test
 	public void queryRtcEvent() {
 		Map<String, Object> coMap = new HashMap<String, Object>();
 //		coMap.put("weekStatus", "1");
@@ -107,6 +107,14 @@ public class MongoTest {
 		// RoomEventEntity queryRoomUsersInfo =
 		// mongoDBService.queryRoomUsersInfo(condition, "RoomEvent");
 		// System.out.println(JSON.toJSONString(queryRoomUsersInfo, true));
+	}
+	
+	@Test
+	public void testFindUsersInfoByRoomId() throws Exception{
+		Map<String, Object> condition = new HashMap<>();
+		condition.put("roomId", "13255");
+		RoomEventEntity roomEventEntity  = (RoomEventEntity)mongoDBService.findUsersInfoByRoomId(condition, "RoomEvent");
+		System.out.println(roomEventEntity.getStudentId()+":"+roomEventEntity.getStudentName());
 	}
 
 }
