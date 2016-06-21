@@ -74,11 +74,11 @@ public class MongoTest {
 
 	}
 
-//	@Test
+	@Test
 	public void queryRtcEvent() {
 		Map<String, Object> coMap = new HashMap<String, Object>();
 //		coMap.put("weekStatus", "1");
-//		coMap.put("roomId", "13791");
+		coMap.put("roomId", "12211");
 		try {
 			List<RtcEventEntity> queryRtcEvent = mongoDBService.queryRtcEvent(coMap, "RtcEvent");
 			System.out.println(JSON.toJSONString(queryRtcEvent, true));
@@ -109,7 +109,7 @@ public class MongoTest {
 		// System.out.println(JSON.toJSONString(queryRoomUsersInfo, true));
 	}
 	
-	@Test
+	//@Test
 	public void testFindUsersInfoByRoomId() throws Exception{
 		Map<String, Object> condition = new HashMap<>();
 		condition.put("roomId", "13255");
