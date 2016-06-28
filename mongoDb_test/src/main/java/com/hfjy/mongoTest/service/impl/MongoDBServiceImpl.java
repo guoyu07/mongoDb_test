@@ -157,7 +157,7 @@ public class MongoDBServiceImpl implements MongoDBService {
 			// 遍历集合，获取每个房间的语音信息
 			Map<String, Object> coMap = new HashMap<>();
 			List<RtcEventEntity> rtcEventEntitys = this.queryRtcEvent(coMap, "RtcEvent");
-			Map<String, Object> conditionForQueryUsers=new HashMap<>();
+			Map<String, Object> conditionForQueryUsers = new HashMap<>();
 			Iterator<RoomEventEntity> roomEventEntitys = data.iterator();
 			while (roomEventEntitys.hasNext()) {
 				RoomEventEntity roomEventEntity = roomEventEntitys.next();
@@ -165,12 +165,12 @@ public class MongoDBServiceImpl implements MongoDBService {
 					for (RtcEventEntity rtcEventEntity : rtcEventEntitys) {
 						if (rtcEventEntity.getRoomId().equals(roomEventEntity.getRoomId())) {
 							conditionForQueryUsers.put("roomId", rtcEventEntity.getRoomId());
-							RoomEventEntity  tempRoomEventEntity= findUsersInfoByRoomId(conditionForQueryUsers, "RoomEvent");
-							if (tempRoomEventEntity==null||tempRoomEventEntity.getStudentId()==null||tempRoomEventEntity.getTeacherId()==null) {
+							RoomEventEntity tempRoomEventEntity = findUsersInfoByRoomId(conditionForQueryUsers, "RoomEvent");
+							if (tempRoomEventEntity == null || tempRoomEventEntity.getStudentId() == null || tempRoomEventEntity.getTeacherId() == null) {
 								roomEventEntitys.remove();
 								break;
 							}
-							if (tempRoomEventEntity.getTeacherName().indexOf("测试")>-1||tempRoomEventEntity.getStudentName().indexOf("测试")>-1) {
+							if (tempRoomEventEntity.getTeacherName().indexOf("测试") > -1 || tempRoomEventEntity.getStudentName().indexOf("测试") > -1) {
 								roomEventEntitys.remove();
 								break;
 							}
@@ -182,8 +182,6 @@ public class MongoDBServiceImpl implements MongoDBService {
 							roomEventEntity.setStudentName(tempRoomEventEntity.getStudentName());
 							roomEventEntity.setTeacherId(tempRoomEventEntity.getTeacherId());
 							roomEventEntity.setTeacherName(tempRoomEventEntity.getTeacherName());
-							log.debug(roomEventEntity.getRoomId() + "--------->OpenCount-------->" + rtcEventEntity.getOpenCount() + "--------->CancelCount-------->" + rtcEventEntity.getCancelCount()
-									+ "------->ChannelInfo---->" + rtcEventEntity.getChannelInfo());
 							break;
 						}
 					}
@@ -213,7 +211,7 @@ public class MongoDBServiceImpl implements MongoDBService {
 				Collections.sort(list);
 				long startTime = Long.parseLong(list.get(0));
 				long endTime = Long.parseLong(list.get(list.size() - 1));
-				roomEventEntity.setLessionTimeRegion(sdf.format(new Date(startTime))+"-"+DateUtils.formatDate(new Date(endTime), "HH:mm"));
+				roomEventEntity.setLessionTimeRegion(sdf.format(new Date(startTime)) + "-" + DateUtils.formatDate(new Date(endTime), "HH:mm"));
 				roomEventEntity.setLessonTimes(null);
 				data.add(roomEventEntity);
 			}
@@ -253,10 +251,10 @@ public class MongoDBServiceImpl implements MongoDBService {
 			}
 			condition.put("cond", cond);
 			// reduce
-			sb.append("function(doc,prev){").append("prev.fristTime++;if(prev.fristTime==1){ prev.lastTime=doc.insertTime; }")
+			sb.append("function(doc,prev){").append("if(doc.userType=='1'){prev.fristTime++;if(prev.fristTime==1){ prev.lastTime=doc.insertTime; }")
 					.append("if(prev.fristTime>=2){prev.channelSwitchTimes.push((doc.insertTime-prev.lastTime)/(1000*60)); prev.lastTime=doc.insertTime } ")
 					.append(" prev.channelSwitch.push(doc.source);prev.operateDesc.push(doc.desc);").append(" if(doc.status=='1' &&!doc.isChange){ prev.openCount++; ")
-					.append(" }else if(doc.status=='0' &&!doc.isChange){ prev.cancelCount++;} }");
+					.append(" }else if(doc.status=='0' &&!doc.isChange){ prev.cancelCount++;} }}");
 			// 执行
 			List<RtcEventEntity> data = (List<RtcEventEntity>) mongoDBManager.group(condition, sb.toString(), RtcEventEntity.class);
 
@@ -288,14 +286,21 @@ public class MongoDBServiceImpl implements MongoDBService {
 						rtcEventEntity.setChannelInfo(sb.toString());
 						result.add(rtcEventEntity);
 						continue;
+						//为了解决sources为空的情况，加了一层判断
+					}else if (operateDesc.length >= 1 && StringUtils.validateCollectionItemsIsSameOrNot(Arrays.asList(operateDesc), "关闭")) {
+						sb.append("没有使用语音！");
+						rtcEventEntity.setChannelInfo(sb.toString());
+						result.add(rtcEventEntity);
+						continue;
 					}
 					// 这是频道
 					if ((null != sources && sources.length > 0) && (null != sourceTimes && sourceTimes.length > 0)) {
-						if (operateDesc.length>1&&StringUtils.validateCollectionItemsIsSameOrNot(Arrays.asList(operateDesc), "关闭")) {
+						if (operateDesc.length > 1 && StringUtils.validateCollectionItemsIsSameOrNot(Arrays.asList(operateDesc), "关闭")) {
 							sb.append("没有使用语音！");
 							rtcEventEntity.setChannelInfo(sb.toString());
-						}else {
-							int m=Arrays.asList(operateDesc).indexOf("打开");
+						} else {
+							// 过滤掉开始指令为“关闭”的情况，以“打开”指令开始
+							int m = Arrays.asList(operateDesc).indexOf("打开");
 							for (int i = m; i < sourceTimes.length; i++) {
 								String sourceName = sources[i];
 								if (i + 1 <= operateDesc.length) {
@@ -367,38 +372,38 @@ public class MongoDBServiceImpl implements MongoDBService {
 
 	@Override
 	public RoomEventEntity findUsersInfoByRoomId(Map<String, Object> condition, String collectionName) throws Exception {
-				// 校验
-				if (StringUtils.isEmpty(collectionName)) {
-					throw new Exception("没有表信息");
-				}
-				mongoDBManager = new MongoDBManager(dataBase, collectionName);
-				// 条件和参数
-				StringBuffer sb = new StringBuffer();
-				if (null != condition) {
-					if (condition.get("key") == null) {
-						condition.put("key", "roomId");
-					}
-					if (condition.get("initial") == null) {
-						Map<String, Object> initial = new HashMap<String, Object>();
-						initial.put("studentId", new String[] {});
-						initial.put("studentName", new String[] {});
-						initial.put("teacherId", new String[] {});
-						initial.put("teacherName", new String[] {});
-						condition.put("initial", initial);
-					}
-					// 根据roomId查询
-					Map<String, Object> cond = new HashMap<String, Object>();
-					if (condition.get("roomId") != null) {
-						cond.put("roomId", condition.get("roomId"));
-					}
-					condition.put("cond", cond);
-					sb.append("function(doc,prev){ if(doc.userType=='1'){prev.teacherId=doc.userId;prev.teacherName=doc.userName;  ");
-					sb.append(" }else if(doc.userType=='0'){ prev.studentId=doc.userId;prev.studentName=doc.userName;}} ");
-					List<RoomEventEntity> roomEventEntitys = (List<RoomEventEntity>) mongoDBManager.group(condition, sb.toString(), RoomEventEntity.class);
-					if (roomEventEntitys!=null&&roomEventEntitys.size()>0) {
-						return roomEventEntitys.get(0);
-					}
-				}
-				return null;
+		// 校验
+		if (StringUtils.isEmpty(collectionName)) {
+			throw new Exception("没有表信息");
+		}
+		mongoDBManager = new MongoDBManager(dataBase, collectionName);
+		// 条件和参数
+		StringBuffer sb = new StringBuffer();
+		if (null != condition) {
+			if (condition.get("key") == null) {
+				condition.put("key", "roomId");
+			}
+			if (condition.get("initial") == null) {
+				Map<String, Object> initial = new HashMap<String, Object>();
+				initial.put("studentId", new String[] {});
+				initial.put("studentName", new String[] {});
+				initial.put("teacherId", new String[] {});
+				initial.put("teacherName", new String[] {});
+				condition.put("initial", initial);
+			}
+			// 根据roomId查询
+			Map<String, Object> cond = new HashMap<String, Object>();
+			if (condition.get("roomId") != null) {
+				cond.put("roomId", condition.get("roomId"));
+			}
+			condition.put("cond", cond);
+			sb.append("function(doc,prev){ if(doc.userType=='1'){prev.teacherId=doc.userId;prev.teacherName=doc.userName;  ");
+			sb.append(" }else if(doc.userType=='0'){ prev.studentId=doc.userId;prev.studentName=doc.userName;}} ");
+			List<RoomEventEntity> roomEventEntitys = (List<RoomEventEntity>) mongoDBManager.group(condition, sb.toString(), RoomEventEntity.class);
+			if (roomEventEntitys != null && roomEventEntitys.size() > 0) {
+				return roomEventEntitys.get(0);
+			}
+		}
+		return null;
 	}
 }
