@@ -47,11 +47,11 @@ public class MongoTest {
 	@Autowired
 	private MongoDBService mongoDBService;
 
-	//@Test
+	@Test
 	public void groupRoomEvent() {
 		Map<String, Object> coMap = new HashMap<String, Object>();
-		coMap.put("weekStatus", "1");
-		coMap.put("roomId", "13255");
+		coMap.put("weekStatus", "0");
+		coMap.put("roomId", "15060");
 		try {
 			List<RoomEventEntity> data = mongoDBService.groupRoomEvent(coMap, "RoomEvent");
 			System.out.println(JSON.toJSONString(data, true));
@@ -74,11 +74,11 @@ public class MongoTest {
 
 	}
 
-	@Test
+	//@Test
 	public void queryRtcEvent() {
 		Map<String, Object> coMap = new HashMap<String, Object>();
-//		coMap.put("weekStatus", "1");
-		coMap.put("roomId", "12211");
+		//coMap.put("weekStatus", "-1");
+		coMap.put("roomId", "16326");
 		try {
 			List<RtcEventEntity> queryRtcEvent = mongoDBService.queryRtcEvent(coMap, "RtcEvent");
 			System.out.println(JSON.toJSONString(queryRtcEvent, true));

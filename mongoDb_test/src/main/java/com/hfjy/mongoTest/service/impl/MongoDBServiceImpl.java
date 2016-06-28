@@ -279,15 +279,16 @@ public class MongoDBServiceImpl implements MongoDBService {
 				// 操作详情描述
 				String[] operateDesc = rtcEventEntity.getOperateDesc();
 				StringBuilder sb = new StringBuilder();
-				if (null != operateDesc && operateDesc.length > 0) {
-					// 判断operateDesc中只有一个“打开”或“关闭”
-					if (operateDesc.length == 1 && operateDesc[0].equals("打开")) {
-						sb.append(sources[0] + "(120)");// 默认120分钟
+				int operateDescLength = operateDesc.length;
+				if (null != operateDesc && operateDescLength > 0) {
+					// 判断operateDesc中“打开”或“关闭”
+					if (Arrays.asList(operateDesc).indexOf("打开")==operateDescLength-1) {
+						sb.append(sources[operateDescLength-1] + "(120)");// 默认120分钟
 						rtcEventEntity.setChannelInfo(sb.toString());
 						result.add(rtcEventEntity);
 						continue;
 						//为了解决sources为空的情况，加了一层判断
-					}else if (operateDesc.length >= 1 && StringUtils.validateCollectionItemsIsSameOrNot(Arrays.asList(operateDesc), "关闭")) {
+					}else if (operateDescLength >= 1 && StringUtils.validateCollectionItemsIsSameOrNot(Arrays.asList(operateDesc), "关闭")) {
 						sb.append("没有使用语音！");
 						rtcEventEntity.setChannelInfo(sb.toString());
 						result.add(rtcEventEntity);
@@ -295,7 +296,7 @@ public class MongoDBServiceImpl implements MongoDBService {
 					}
 					// 这是频道
 					if ((null != sources && sources.length > 0) && (null != sourceTimes && sourceTimes.length > 0)) {
-						if (operateDesc.length > 1 && StringUtils.validateCollectionItemsIsSameOrNot(Arrays.asList(operateDesc), "关闭")) {
+						if (operateDescLength > 1 && StringUtils.validateCollectionItemsIsSameOrNot(Arrays.asList(operateDesc), "关闭")) {
 							sb.append("没有使用语音！");
 							rtcEventEntity.setChannelInfo(sb.toString());
 						} else {
@@ -303,7 +304,7 @@ public class MongoDBServiceImpl implements MongoDBService {
 							int m = Arrays.asList(operateDesc).indexOf("打开");
 							for (int i = m; i < sourceTimes.length; i++) {
 								String sourceName = sources[i];
-								if (i + 1 <= operateDesc.length) {
+								if (i + 1 <= operateDescLength) {
 									// 前一条记录为“关闭”，后一条记录为“打开”或“关闭”时，默认为QQ语音
 									sourceName = (operateDesc[i].equals("关闭") && (operateDesc[i + 1].equals("打开") || operateDesc[i + 1].equals("关闭"))) ? "QQ" : sources[i];
 								}
