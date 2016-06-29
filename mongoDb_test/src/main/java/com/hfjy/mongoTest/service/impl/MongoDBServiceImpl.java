@@ -182,6 +182,7 @@ public class MongoDBServiceImpl implements MongoDBService {
 							roomEventEntity.setStudentName(tempRoomEventEntity.getStudentName());
 							roomEventEntity.setTeacherId(tempRoomEventEntity.getTeacherId());
 							roomEventEntity.setTeacherName(tempRoomEventEntity.getTeacherName());
+							log.debug(String.format("roomId:%1$s>>>>>openCount:%2$s>>>>cancelCount:%3$s>>>>channelSwitch:%4$s",rtcEventEntity.getRoomId(),rtcEventEntity.getOpenCount(),rtcEventEntity.getCancelCount(),rtcEventEntity.getChannelSwitch().length));
 							break;
 						}
 					}
