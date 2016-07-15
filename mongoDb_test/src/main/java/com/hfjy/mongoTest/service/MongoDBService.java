@@ -77,4 +77,16 @@ public interface MongoDBService {
 	 * @since Vphone1.3.0
 	*/
 	RoomEventEntity findUsersInfoByRoomId(Map<String, Object> condition,String collectionName)throws Exception;
+	
+	/**
+	 * TODO(上课情况统计)
+	 * @author: no_relax 
+	 * @Title: studyConditionReport
+	 * @param condition
+	 * @param collectionName
+	 * @return RoomEventEntity
+	 * @throws Exception 
+	 * @since Vphone1.3.0
+	*/
+	List<RoomEventEntity> studyConditionReport(Map<String, Object> condition,String status,String collectionName)throws Exception;
 } 

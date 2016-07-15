@@ -26,6 +26,7 @@ package com.hfjy.mongoTest;
 *  
 */
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,10 +52,26 @@ public class MongoTest {
 	public void groupRoomEvent() {
 		Map<String, Object> coMap = new HashMap<String, Object>();
 		coMap.put("weekStatus", "0");
-		coMap.put("roomId", "15060");
+//		coMap.put("roomId", "16126");
 		try {
 			List<RoomEventEntity> data = mongoDBService.groupRoomEvent(coMap, "RoomEvent");
-			System.out.println(JSON.toJSONString(data, true));
+			int experienceLessons=0;
+			int diagnosisLessons=0;
+			int paidLessons=0;
+			for (RoomEventEntity roomEventEntity : data) {
+				String courseName = roomEventEntity.getCourseName();
+				String lessionTimeRegion = roomEventEntity.getLessionTimeRegion();
+				if (lessionTimeRegion.startsWith("07/14")) {
+					if (courseName.indexOf("体验")>-1) {
+						experienceLessons++;
+					}else if (courseName.indexOf("诊断")>-1) {
+						diagnosisLessons++;
+					}else {
+						paidLessons++;
+					}
+				}
+			}
+			System.out.println("experienceLessons:"+experienceLessons+">>>>>>diagnosisLessons:"+diagnosisLessons+">>>>>>>>paidLessons:"+paidLessons);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -78,7 +95,7 @@ public class MongoTest {
 	public void queryRtcEvent() {
 		Map<String, Object> coMap = new HashMap<String, Object>();
 		//coMap.put("weekStatus", "-1");
-		coMap.put("roomId", "16326");
+		coMap.put("roomId", "16126");
 		try {
 			List<RtcEventEntity> queryRtcEvent = mongoDBService.queryRtcEvent(coMap, "RtcEvent");
 			System.out.println(JSON.toJSONString(queryRtcEvent, true));
@@ -115,6 +132,45 @@ public class MongoTest {
 		condition.put("roomId", "13255");
 		RoomEventEntity roomEventEntity  = (RoomEventEntity)mongoDBService.findUsersInfoByRoomId(condition, "RoomEvent");
 		System.out.println(roomEventEntity.getStudentId()+":"+roomEventEntity.getStudentName());
+	}
+	
+	@Test
+	public void testStudyConditionReport() throws Exception{
+		HashMap<String, Object> condition = new HashMap<>();
+		int experienceLessons=0;
+		int diagnosisLessons=0;
+		int paidLessons=0;
+		int reviewCount=0;
+		HashMap<String, Object> result = new HashMap<>();
+		//正在上课的
+		List<RoomEventEntity> studyConditionReport = mongoDBService.studyConditionReport(condition,"2", "RoomEvent");
+		for (RoomEventEntity roomEventEntity : studyConditionReport) {
+			if (roomEventEntity.getTeacherName().indexOf("测试") > -1 || roomEventEntity.getStudentName().indexOf("测试") > -1) {
+				continue;
+			}
+			if (roomEventEntity.getCourseName().indexOf("体验")>-1) {
+				experienceLessons++;
+			}else if (roomEventEntity.getCourseName().indexOf("诊断")>-1) {
+				System.out.println("roomId>>>>>>>>>>>"+roomEventEntity.getRoomId());
+				diagnosisLessons++;
+			}else {
+				paidLessons++;
+			}
+		}
+		List<RoomEventEntity> reviewRoomEventEntity = mongoDBService.studyConditionReport(condition, "3", "RoomEvent");
+		for (RoomEventEntity roomEventEntity : reviewRoomEventEntity) {
+			if (roomEventEntity.getTeacherName().indexOf("测试") > -1 || roomEventEntity.getStudentName().indexOf("测试") > -1) {
+				continue;
+			}
+			if (!roomEventEntity.getReviewTimes().isEmpty()) {
+				reviewCount++;
+			}
+		}
+		result.put("experienceLessons", experienceLessons);
+		result.put("diagnosisLessons", diagnosisLessons);
+		result.put("paidLessons", paidLessons);
+		result.put("reviewCount", reviewCount);
+		System.out.println(JSON.toJSONString(result, true));
 	}
 
 }
