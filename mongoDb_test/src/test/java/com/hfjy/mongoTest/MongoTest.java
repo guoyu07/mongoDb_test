@@ -48,7 +48,7 @@ public class MongoTest {
 	@Autowired
 	private MongoDBService mongoDBService;
 
-	@Test
+//	@Test
 	public void groupRoomEvent() {
 		Map<String, Object> coMap = new HashMap<String, Object>();
 		coMap.put("weekStatus", "0");
@@ -151,7 +151,6 @@ public class MongoTest {
 			if (roomEventEntity.getCourseName().indexOf("体验")>-1) {
 				experienceLessons++;
 			}else if (roomEventEntity.getCourseName().indexOf("诊断")>-1) {
-				System.out.println("roomId>>>>>>>>>>>"+roomEventEntity.getRoomId());
 				diagnosisLessons++;
 			}else {
 				paidLessons++;
