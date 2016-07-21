@@ -46,6 +46,7 @@ import com.hfjy.mongoTest.entity.RoomEventDetail;
 import com.hfjy.mongoTest.entity.RoomEventEntity;
 import com.hfjy.mongoTest.entity.RtcEventEntity;
 import com.hfjy.mongoTest.service.MongoDBService;
+import com.hfjy.mongoTest.utils.StringUtils;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration("classpath:com/hfjy/mongoTest/spring.xml")
@@ -150,6 +151,7 @@ public class MongoTest {
 		int userQqVoice = 0;
 		//上课不超过一个小时次数
 		int studyInterruptTimes=0;
+		int noUseVoice=0;
 		HashMap<String, Object> result = new HashMap<>();
 		// 正在上课的
 		List<RoomEventEntity> studyConditionReport = mongoDBService.studyConditionReport(condition, "2", "RoomEvent");
@@ -170,6 +172,10 @@ public class MongoTest {
 				List<RtcEventEntity> queryRtcEvents = mongoDBService.queryRtcEvent(coMap, "RtcEvent");
 				if (queryRtcEvents.size() > 0) {
 					RtcEventEntity rtcEventEntity = queryRtcEvents.get(0);
+					if (StringUtils.validateCollectionItemsIsSameOrNot(Arrays.asList(rtcEventEntity.getOperateDesc()), "关闭")) {
+						noUseVoice++;
+						continue;
+					}
 					String channelInfo = rtcEventEntity.getChannelInfo();
 					String[] channelInfos = channelInfo.split(",");
 					String lastChannelInfo = channelInfos[channelInfos.length - 1];
@@ -200,6 +206,7 @@ public class MongoTest {
 		result.put("reviewCount", reviewCount);
 		result.put("userQqVoice", userQqVoice);
 		result.put("studyInterruptTimes", studyInterruptTimes);
+		result.put("noUseVoice", noUseVoice);
 		System.out.println(JSON.toJSONString(result, true));
 	}
 
@@ -210,14 +217,23 @@ public class MongoTest {
 		List<RoomEventDetail> roomEventDetails = mongoDBService.queryRoomEventDetail(con, "RoomEvent");
 		long endTime=0;
 		long startTime=0;
+		List<String> list = new ArrayList<>();
 		for (RoomEventDetail roomEventDetail : roomEventDetails) {
 			String event = roomEventDetail.getEvent();
-			if (event.equals("结束上课")) {
-				endTime = Long.parseLong(roomEventDetail.getInsertTime());
-			}else if (event.equals("开始上课")) {
-				startTime = Long.parseLong(roomEventDetail.getInsertTime());
-			}
+			list.add(event);
 		}
+		if (list.contains("结束上课")) {
+			int i = list.indexOf("结束上课");
+			endTime = Long.parseLong(roomEventDetails.get(i).getInsertTime());
+		}else {
+			int i = list.indexOf("退出");
+			endTime = Long.parseLong(roomEventDetails.get(i).getInsertTime());
+		}
+		if (list.contains("开始上课")) {
+			int i = list.indexOf("开始上课");
+			startTime = Long.parseLong(roomEventDetails.get(i).getInsertTime());
+		}
+		
 		if ((endTime-startTime)>3600000) {
 			studyInterruptTimes++;
 		}
