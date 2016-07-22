@@ -46,6 +46,7 @@ import com.hfjy.mongoTest.entity.RoomEventDetail;
 import com.hfjy.mongoTest.entity.RoomEventEntity;
 import com.hfjy.mongoTest.entity.RtcEventEntity;
 import com.hfjy.mongoTest.service.MongoDBService;
+import com.hfjy.mongoTest.utils.DateUtils;
 import com.hfjy.mongoTest.utils.StringUtils;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -147,6 +148,8 @@ public class MongoTest {
 		int diagnosisLessons = 0;
 		int paidLessons = 0;
 		int reviewCount = 0;
+		//回顾的时间间隔
+		List<Object> reviewTimes=new ArrayList<>();
 		// 使用QQ语音超过10分钟课程数量
 		int userQqVoice = 0;
 		//上课不超过一个小时次数
@@ -196,8 +199,12 @@ public class MongoTest {
 			if (roomEventEntity.getTeacherName().indexOf("测试") > -1 || roomEventEntity.getStudentName().indexOf("测试") > -1) {
 				continue;
 			}
-			if (!roomEventEntity.getReviewTimes().isEmpty()) {
+			List<String> eventDescs = Arrays.asList(roomEventEntity.getEventDescs());
+			List<String> eventTimes = Arrays.asList(roomEventEntity.getEventTimes());
+			if (eventDescs.contains("进入")) {
 				reviewCount++;
+				List<Object> reviewTime=reportReviewTimes(eventDescs, eventTimes);
+				reviewTimes.addAll(reviewTime);
 			}
 		}
 		result.put("experienceLessons", experienceLessons);
@@ -207,6 +214,7 @@ public class MongoTest {
 		result.put("userQqVoice", userQqVoice);
 		result.put("studyInterruptTimes", studyInterruptTimes);
 		result.put("noUseVoice", noUseVoice);
+		result.put("reviewTimes", reviewTimes);
 		System.out.println(JSON.toJSONString(result, true));
 	}
 
@@ -238,6 +246,29 @@ public class MongoTest {
 			studyInterruptTimes++;
 		}
 		return studyInterruptTimes;
+	}
+	
+	/**
+	 * TODO(统计回顾时间)
+	 * @author: no_relax 
+	 * @Title: reportReviewTimes
+	 * @param eventDescs
+	 * @param eventTimes
+	 * @return List<Object>
+	 * @since Vphone1.3.0
+	*/
+	public List<Object> reportReviewTimes(List<String> eventDescs,List<String> eventTimes){
+		List<Object> reviewTimes=new ArrayList<>();
+		for (int i = 0; i < eventDescs.size(); i++) {
+			if (i+1<eventDescs.size()) {
+				if (eventDescs.get(i).equals("进入")&&eventDescs.get(i+1).equals("退出")) {
+					String enterTime = eventTimes.get(i);
+					String existTime = eventTimes.get(i+1);
+					reviewTimes.add((Long.parseLong(existTime)-Long.parseLong(enterTime))/(1000*60));
+				}
+			}
+		}
+		return reviewTimes;
 	}
 
 }

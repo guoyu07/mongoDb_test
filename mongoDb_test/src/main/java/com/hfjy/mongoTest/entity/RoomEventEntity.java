@@ -98,10 +98,14 @@ public class RoomEventEntity implements Serializable{
 	 */
 	private String channelInfo;
 	
-	/**
-	 * 回顾的次数
+	/*
+	 * 事件描述数组
 	 */
-	private HashMap<String, Object> reviewTimes;
+	private String[] eventDescs;
+	/*
+	 * 事件描述的时间数组
+	 */
+	private String[] eventTimes;
 	
 	public String getRoomId() {
 		return roomId;
@@ -226,14 +230,20 @@ public class RoomEventEntity implements Serializable{
 	public HashMap<String, Object> getUserIds() {
 		return userIds;
 	}
-	public HashMap<String, Object> getReviewTimes() {
-		return reviewTimes;
-	}
-	public void setReviewTimes(HashMap<String, Object> reviewTimes) {
-		this.reviewTimes = reviewTimes;
-	}
 	public void setUserIds(HashMap<String, Object> userIds) {
 		this.userIds = userIds;
+	}
+	public String[] getEventDescs() {
+		return eventDescs;
+	}
+	public void setEventDescs(String[] eventDescs) {
+		this.eventDescs = eventDescs;
+	}
+	public String[] getEventTimes() {
+		return eventTimes;
+	}
+	public void setEventTimes(String[] eventTimes) {
+		this.eventTimes = eventTimes;
 	}
 	
 }

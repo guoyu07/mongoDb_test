@@ -437,7 +437,8 @@ public class MongoDBServiceImpl implements MongoDBService {
 						initial.put("courseName", "");
 						initial.put("studentName", "");
 						initial.put("teacherName", "");
-						initial.put("reviewTimes", new HashMap<>());
+						initial.put("eventDescs", new String[]{});
+						initial.put("eventTimes", new String[]{});
 						condition.put("initial", initial);
 					}
 					// 根据roomId查询
@@ -446,7 +447,7 @@ public class MongoDBServiceImpl implements MongoDBService {
 						cond.put("roomId", condition.get("roomId"));
 					}
 					sb.append("function(doc,prev){ prev.courseName=doc.courseName; if(doc.userType=='1'){prev.teacherName=doc.userName;}else if(doc.userType=='0'){prev.studentName=doc.userName; }  ");
-					sb.append(" if(doc.status=='3'&&doc.event==\"进入\"){if(!(doc.roomId in prev.reviewTimes)){prev.reviewTimes[doc.roomId]=1;}else{prev.reviewTimes[doc.roomId]++;}}} ");
+					sb.append("if(doc.status=='3'&&doc.userType=='0'){prev.eventDescs.push(doc.event);prev.eventTimes.push(doc.insertTime);}}  ");
 					Map<String, Object> dates = new HashMap<String, Object>();
 					String formatDate = DateUtils.formatDate(DateUtils.nextDate(new Date(), DateType.DAY, -1), "yyyy-MM-dd");
 					Date startDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(formatDate+" 00:00:00");
