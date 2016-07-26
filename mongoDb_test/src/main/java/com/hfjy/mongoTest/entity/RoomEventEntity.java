@@ -98,6 +98,15 @@ public class RoomEventEntity implements Serializable{
 	 */
 	private String channelInfo;
 	
+	/*
+	 * 事件描述数组
+	 */
+	private String[] eventDescs;
+	/*
+	 * 事件描述的时间数组
+	 */
+	private String[] eventTimes;
+	
 	public String getRoomId() {
 		return roomId;
 	}
@@ -223,6 +232,18 @@ public class RoomEventEntity implements Serializable{
 	}
 	public void setUserIds(HashMap<String, Object> userIds) {
 		this.userIds = userIds;
+	}
+	public String[] getEventDescs() {
+		return eventDescs;
+	}
+	public void setEventDescs(String[] eventDescs) {
+		this.eventDescs = eventDescs;
+	}
+	public String[] getEventTimes() {
+		return eventTimes;
+	}
+	public void setEventTimes(String[] eventTimes) {
+		this.eventTimes = eventTimes;
 	}
 	
 }
