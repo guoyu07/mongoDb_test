@@ -5,6 +5,64 @@
 	<artifactId>mongoDb_test</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>war</packaging>
+	
+	
+	<name>mongoDb_test</name>
+	<url>http://www.hfjy.com</url>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
+	<!-- Maven私服 -->
+	<repositories>
+		<repository>
+			<id>com.hfjy</id>
+			<name>HFJY Maven</name>
+			<url>http://maven.hfjy.red:8081/nexus/content/repositories/snapshots/</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+				<checksumPolicy>warn</checksumPolicy>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>thirdparty</id>
+			<name>HFJY Maven 3rd</name>
+			<url>http://maven.hfjy.red:8081/nexus/content/repositories/thirdparty/</url>
+		</repository>
+	</repositories>
+	<pluginRepositories>
+		<pluginRepository>
+			<id>com.hfjy</id>
+			<name>HFJY Maven</name>
+			<url>http://maven.hfjy.red:8081/nexus/content/repositories/snapshots/</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+				<checksumPolicy>warn</checksumPolicy>
+			</snapshots>
+		</pluginRepository>
+	</pluginRepositories>
+
+	<!-- 部署到Maven私服 -->
+	<distributionManagement>
+		<snapshotRepository>
+			<id>user-snapshot</id>
+			<url>http://maven.hfjy.red:8081/nexus/content/repositories/snapshots</url>
+		</snapshotRepository>
+		<repository>
+			<id>user-release</id>
+			<url>http://maven.hfjy.red:8081/nexus/content/repositories/releases</url>
+		</repository>
+	</distributionManagement>
+
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
@@ -109,6 +167,12 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 			<version>3.3.2</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.hfjy</groupId>
+			<artifactId>service.xue.message</artifactId>
+			<version>1.0.1-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 	<build>
