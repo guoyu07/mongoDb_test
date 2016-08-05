@@ -182,7 +182,7 @@ public class MongoDBController {
 		Map<String, Object> studyConditionReport = getStudyConditionReport();
 		// 准备邮件格式
 		StringBuffer sb = new StringBuffer();
-		sb.append("<table border=\"1\" cellspacing=\"0\">");
+		sb.append("<table border=\"1\" >");
 		sb.append("<tr>");
 		sb.append("<td>体验课</td>");
 		sb.append("<td>诊断课</td>");
@@ -205,8 +205,9 @@ public class MongoDBController {
 		sb.append("</tr>");
 		sb.append("</table>");
 		// 调用发送邮件方法
-		SendCloudService.sendStudyConditionReport(sb.toString());
-		return mongoDBService;
+		Map<String, Object> resMap=new HashMap<>();
+		resMap.put("desc", SendCloudService.sendStudyConditionReport(sb.toString()));
+		return resMap;
 	}
 
 	private Map<String, Object> getStudyConditionReport() throws Exception {
