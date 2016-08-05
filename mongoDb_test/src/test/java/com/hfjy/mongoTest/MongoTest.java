@@ -42,12 +42,14 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.alibaba.fastjson.JSON;
+import com.hfjy.base.util.JSONUtil;
 import com.hfjy.mongoTest.entity.RoomEventDetail;
 import com.hfjy.mongoTest.entity.RoomEventEntity;
 import com.hfjy.mongoTest.entity.RtcEventEntity;
 import com.hfjy.mongoTest.service.MongoDBService;
 import com.hfjy.mongoTest.utils.DateUtils;
 import com.hfjy.mongoTest.utils.StringUtils;
+import com.hfjy.service.xue.mail.SendCloudService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration("classpath:com/hfjy/mongoTest/spring.xml")
@@ -141,83 +143,6 @@ public class MongoTest {
 		System.out.println(roomEventEntity.getStudentId() + ":" + roomEventEntity.getStudentName());
 	}
 
-	@Test
-	public void testStudyConditionReport() throws Exception {
-		HashMap<String, Object> condition = new HashMap<>();
-		int experienceLessons = 0;
-		int diagnosisLessons = 0;
-		int paidLessons = 0;
-		int reviewCount = 0;
-		//回顾的时间间隔
-		List<Object> reviewTimes=new ArrayList<>();
-		// 使用QQ语音超过10分钟课程数量
-		int userQqVoice = 0;
-		//上课不超过一个小时次数
-		int studyInterruptTimes=0;
-		int noUseVoice=0;
-		HashMap<String, Object> result = new HashMap<>();
-		// 正在上课的
-		List<RoomEventEntity> studyConditionReport = mongoDBService.studyConditionReport(condition, "2", "RoomEvent");
-		Map<String, Object> coMap = new HashMap<String, Object>();
-		for (RoomEventEntity roomEventEntity : studyConditionReport) {
-			if (roomEventEntity.getTeacherName().indexOf("测试") > -1 || roomEventEntity.getStudentName().indexOf("测试") > -1) {
-				continue;
-			}
-			if (roomEventEntity.getCourseName().indexOf("体验") > -1) {
-				experienceLessons++;
-			} else if (roomEventEntity.getCourseName().indexOf("诊断") > -1) {
-				diagnosisLessons++;
-			} else {
-				paidLessons++;
-				// 获取roomId
-				String roomId = roomEventEntity.getRoomId();
-				coMap.put("roomId", roomId);
-				List<RtcEventEntity> queryRtcEvents = mongoDBService.queryRtcEvent(coMap, "RtcEvent");
-				if (queryRtcEvents.size() > 0) {
-					RtcEventEntity rtcEventEntity = queryRtcEvents.get(0);
-					if (StringUtils.validateCollectionItemsIsSameOrNot(Arrays.asList(rtcEventEntity.getOperateDesc()), "关闭")) {
-						noUseVoice++;
-						continue;
-					}
-					String channelInfo = rtcEventEntity.getChannelInfo();
-					String[] channelInfos = channelInfo.split(",");
-					String lastChannelInfo = channelInfos[channelInfos.length - 1];
-					if (lastChannelInfo.contains("QQ")) {
-						// 取出最后一个语音信息
-						String qqTime = lastChannelInfo.substring(3, lastChannelInfo.length() - 1);
-						if (Double.parseDouble(qqTime) > 10) {
-							userQqVoice++;
-						}
-					}
-				}
-				// 上课在一小时以内统计
-				studyInterruptTimes = reportStudyInterrupt(roomId);
-			}
-		}
-		List<RoomEventEntity> reviewRoomEventEntity = mongoDBService.studyConditionReport(condition, "3", "RoomEvent");
-		for (RoomEventEntity roomEventEntity : reviewRoomEventEntity) {
-			if (roomEventEntity.getTeacherName().indexOf("测试") > -1 || roomEventEntity.getStudentName().indexOf("测试") > -1) {
-				continue;
-			}
-			List<String> eventDescs = Arrays.asList(roomEventEntity.getEventDescs());
-			List<String> eventTimes = Arrays.asList(roomEventEntity.getEventTimes());
-			if (eventDescs.contains("进入")) {
-				reviewCount++;
-				List<Object> reviewTime=reportReviewTimes(eventDescs, eventTimes);
-				reviewTimes.addAll(reviewTime);
-			}
-		}
-		result.put("experienceLessons", experienceLessons);
-		result.put("diagnosisLessons", diagnosisLessons);
-		result.put("paidLessons", paidLessons);
-		result.put("reviewCount", reviewCount);
-		result.put("userQqVoice", userQqVoice);
-		result.put("studyInterruptTimes", studyInterruptTimes);
-		result.put("noUseVoice", noUseVoice);
-		result.put("reviewTimes", reviewTimes);
-		System.out.println(JSON.toJSONString(result, true));
-	}
-
 	public int reportStudyInterrupt(String roomId) throws Exception {
 		int studyInterruptTimes=0;
 		Map<String, Object> con = new HashMap<String, Object>();
@@ -269,6 +194,121 @@ public class MongoTest {
 			}
 		}
 		return reviewTimes;
+	}
+	
+	@Test
+	public void testReport() throws Exception{
+		Map<String, Object> studyConditionReport = getStudyConditionReport();
+		// 准备邮件格式
+		StringBuffer sb = new StringBuffer();
+		sb.append("<table border=\"1\" >");
+		sb.append("<tr>");
+		sb.append("<td>体验课</td>");
+		sb.append("<td>诊断课</td>");
+		sb.append("<td>正式课</td>");
+		sb.append("<td>回顾数量</td>");
+		sb.append("<td>疑似转QQ语音（超出10分钟</td>");
+		sb.append("<td>疑似转屏幕分享（系统上课不足1小时）</td>");
+		sb.append("<td>没有使用语音</td>");
+		sb.append("<td>回顾上课时间</td>");
+		sb.append("</tr>");
+		sb.append("<tr>");
+		sb.append("<td>" + studyConditionReport.get("experienceLessons") + "</td>");
+		sb.append("<td>" + studyConditionReport.get("diagnosisLessons") + "</td>");
+		sb.append("<td>" + studyConditionReport.get("paidLessons") + "</td>");
+		sb.append("<td>" + studyConditionReport.get("reviewCount") + "</td>");
+		sb.append("<td>" + studyConditionReport.get("userQqVoice") + "</td>");
+		sb.append("<td>" + studyConditionReport.get("studyInterruptTimes") + "</td>");
+		sb.append("<td>" + studyConditionReport.get("noUseVoice") + "</td>");
+		sb.append("<td>" + studyConditionReport.get("reviewTimes") + "</td>");
+		sb.append("</tr>");
+		sb.append("</table>");
+		// 调用发送邮件方法
+		System.out.println(SendCloudService.sendStudyConditionReport(sb.toString()));
+	}
+	
+	private Map<String, Object> getStudyConditionReport() throws Exception {
+		HashMap<String, Object> condition = new HashMap<>();
+		int experienceLessons = 0;
+		int diagnosisLessons = 0;
+		int paidLessons = 0;
+		int reviewCount = 0;
+		// 回顾的时间间隔
+		List<Object> reviewTimes = new ArrayList<>();
+		// 使用QQ语音超过10分钟课程数量
+		int userQqVoice = 0;
+		// 上课不超过一个小时次数
+		int studyInterruptTimes = 0;
+		int noUseVoice = 0;
+		HashMap<String, Object> result = new HashMap<>();
+		// 正在上课的
+		List<RoomEventEntity> studyConditionReport = mongoDBService.studyConditionReport(condition, "2", "RoomEvent");
+		Map<String, Object> coMap = new HashMap<String, Object>();
+		for (RoomEventEntity roomEventEntity : studyConditionReport) {
+			if (roomEventEntity.getTeacherName().indexOf("测试") > -1 || roomEventEntity.getStudentName().indexOf("测试") > -1) {
+				continue;
+			}
+			if (roomEventEntity.getCourseName().indexOf("体验") > -1) {
+				experienceLessons++;
+			} else if (roomEventEntity.getCourseName().indexOf("诊断") > -1) {
+				diagnosisLessons++;
+			} else {
+				paidLessons++;
+				// 获取roomId
+				String roomId = roomEventEntity.getRoomId();
+				coMap.put("roomId", roomId);
+				List<RtcEventEntity> queryRtcEvents = mongoDBService.queryRtcEvent(coMap, "RtcEvent");
+				if (queryRtcEvents.size() > 0) {
+					RtcEventEntity rtcEventEntity = queryRtcEvents.get(0);
+					if (StringUtils.validateCollectionItemsIsSameOrNot(Arrays.asList(rtcEventEntity.getOperateDesc()), "关闭")) {
+						noUseVoice++;
+						continue;
+					}
+					String channelInfo = rtcEventEntity.getChannelInfo();
+					String[] channelInfos = channelInfo.split(",");
+					String lastChannelInfo = channelInfos[channelInfos.length - 1];
+					if (lastChannelInfo.contains("QQ")) {
+						// 取出最后一个语音信息
+						String qqTime = lastChannelInfo.substring(3, lastChannelInfo.length() - 1);
+						if (Double.parseDouble(qqTime) > 10) {
+							userQqVoice++;
+						}
+					}
+				}
+				// 上课在一小时以内统计
+				studyInterruptTimes = reportStudyInterrupt(roomId);
+			}
+		}
+		List<RoomEventEntity> reviewRoomEventEntity = mongoDBService.studyConditionReport(condition, "3", "RoomEvent");
+		for (RoomEventEntity roomEventEntity : reviewRoomEventEntity) {
+			if (roomEventEntity.getTeacherName().indexOf("测试") > -1 || roomEventEntity.getStudentName().indexOf("测试") > -1) {
+				continue;
+			}
+			List<String> eventDescs = Arrays.asList(roomEventEntity.getEventDescs());
+			List<String> eventTimes = Arrays.asList(roomEventEntity.getEventTimes());
+			if (eventDescs.contains("进入")) {
+				reviewCount++;
+//				System.out.println(">>>>>>>>>>>>>" + roomEventEntity.getRoomId());
+				List<Object> reviewTime = reportReviewTimes(eventDescs, eventTimes);
+				reviewTimes.addAll(reviewTime);
+			}
+		}
+		reviewTimes.sort(null);
+		result.put("experienceLessons", experienceLessons);
+		result.put("diagnosisLessons", diagnosisLessons);
+		result.put("paidLessons", paidLessons);
+		result.put("reviewCount", reviewCount);
+		result.put("userQqVoice", userQqVoice);
+		result.put("studyInterruptTimes", studyInterruptTimes);
+		result.put("noUseVoice", noUseVoice);
+		result.put("reviewTimes", reviewTimes);
+		StringBuffer sb = new StringBuffer();
+		for (int i = 0; i < reviewTimes.size(); i++) {
+			sb.append(reviewTimes.get(i) + ";");
+		}
+//		System.out.println(sb.toString());
+//		System.out.println(JSON.toJSONString(result, true));
+		return result;
 	}
 
 }
