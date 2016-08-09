@@ -52,7 +52,7 @@ public class MongoDBServiceImpl implements MongoDBService {
 		//
 		Condition cond = Condition.init();
 		if (condition.size() > 0) {
-
+			// 
 			for (Map.Entry<String, Object> entry : condition.entrySet()) {
 				cond.is(entry.getKey(), entry.getValue());
 			}
