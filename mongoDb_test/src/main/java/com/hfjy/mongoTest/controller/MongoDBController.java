@@ -210,6 +210,7 @@ public class MongoDBController {
 		return resMap;
 	}
 
+	
 	private Map<String, Object> getStudyConditionReport() throws Exception {
 		HashMap<String, Object> condition = new HashMap<>();
 		int experienceLessons = 0;
