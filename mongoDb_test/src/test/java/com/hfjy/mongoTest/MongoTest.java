@@ -29,10 +29,12 @@ package com.hfjy.mongoTest;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.codehaus.jackson.annotate.JsonUnwrapped;
 import org.junit.Test;
@@ -43,13 +45,15 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.alibaba.fastjson.JSON;
 import com.hfjy.base.util.JSONUtil;
+import com.hfjy.mongoTest.bean.Condition;
 import com.hfjy.mongoTest.entity.RoomEventDetail;
 import com.hfjy.mongoTest.entity.RoomEventEntity;
+import com.hfjy.mongoTest.entity.RtcEventDetail;
 import com.hfjy.mongoTest.entity.RtcEventEntity;
+import com.hfjy.mongoTest.mongodb.MongoDBManager;
 import com.hfjy.mongoTest.service.MongoDBService;
 import com.hfjy.mongoTest.utils.DateUtils;
 import com.hfjy.mongoTest.utils.StringUtils;
-import com.hfjy.service.xue.mail.SendCloudService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration("classpath:com/hfjy/mongoTest/spring.xml")
@@ -224,7 +228,7 @@ public class MongoTest {
 		sb.append("</tr>");
 		sb.append("</table>");
 		// 调用发送邮件方法
-		System.out.println(SendCloudService.sendStudyConditionReport(sb.toString()));
+//		System.out.println(SendCloudService.sendStudyConditionReport(sb.toString()));
 	}
 	
 	private Map<String, Object> getStudyConditionReport() throws Exception {
