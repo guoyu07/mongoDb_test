@@ -310,5 +310,20 @@ public class MongoTest {
 //		System.out.println(JSON.toJSONString(result, true));
 		return result;
 	}
+	
+	@Test
+	public void test(){
+		MongoDBManager mongoDBManager = new MongoDBManager("admin", "RtcEvent");
+		Condition cond = Condition.init();
+		Condition cond2 = Condition.init();
+		Pattern pattern = Pattern.compile("^.*测试.*$", Pattern.CASE_INSENSITIVE);
+		cond.like("userName", pattern.toString());
+		cond2.not(cond);
+		cond2.is("status", "2");
+		Collection<RtcEventDetail> rtcEventDetails = mongoDBManager.find(cond2, RtcEventDetail.class);
+		for (RtcEventDetail rtcEventDetail : rtcEventDetails) {
+			System.out.println(rtcEventDetail.getUserName());
+		}
+	}
 
 }
