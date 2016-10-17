@@ -30,13 +30,11 @@ package com.hfjy.mongoTest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import org.codehaus.jackson.annotate.JsonUnwrapped;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +42,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.alibaba.fastjson.JSON;
-import com.hfjy.base.util.JSONUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.hfjy.mongoTest.bean.Condition;
 import com.hfjy.mongoTest.entity.RoomEventDetail;
 import com.hfjy.mongoTest.entity.RoomEventEntity;
@@ -52,7 +50,6 @@ import com.hfjy.mongoTest.entity.RtcEventDetail;
 import com.hfjy.mongoTest.entity.RtcEventEntity;
 import com.hfjy.mongoTest.mongodb.MongoDBManager;
 import com.hfjy.mongoTest.service.MongoDBService;
-import com.hfjy.mongoTest.utils.DateUtils;
 import com.hfjy.mongoTest.utils.StringUtils;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -203,7 +200,8 @@ public class MongoTest {
 	@Test
 	public void testReport() throws Exception{
 		Map<String, Object> studyConditionReport = getStudyConditionReport();
-		// 准备邮件格式
+		System.out.println(JSONObject.toJSONString(studyConditionReport, true));
+		/*// 准备邮件格式
 		StringBuffer sb = new StringBuffer();
 		sb.append("<table border=\"1\" >");
 		sb.append("<tr>");
@@ -228,7 +226,7 @@ public class MongoTest {
 		sb.append("</tr>");
 		sb.append("</table>");
 		// 调用发送邮件方法
-//		System.out.println(SendCloudService.sendStudyConditionReport(sb.toString()));
+		System.out.println(SendCloudService.sendStudyConditionReport(sb.toString()));*/
 	}
 	
 	private Map<String, Object> getStudyConditionReport() throws Exception {
@@ -329,5 +327,4 @@ public class MongoTest {
 			System.out.println(rtcEventDetail.getUserName());
 		}
 	}
-
 }
