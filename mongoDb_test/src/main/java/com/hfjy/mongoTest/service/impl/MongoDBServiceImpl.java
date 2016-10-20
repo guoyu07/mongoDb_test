@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.hfjy.mongoTest.bean.Condition;
@@ -29,8 +28,6 @@ import com.hfjy.mongoTest.mongodb.MongoDBManager;
 import com.hfjy.mongoTest.service.MongoDBService;
 import com.hfjy.mongoTest.utils.DateUtils;
 import com.hfjy.mongoTest.utils.StringUtils;
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
 
 @Service(value = "MongoDBService")
 public class MongoDBServiceImpl implements MongoDBService {
@@ -40,7 +37,7 @@ public class MongoDBServiceImpl implements MongoDBService {
 	private static final String dataBase = "admin";
 
 	private MongoDBManager mongoDBManager = null;
-	private static final Logger log = Logger.getLogger(MongoDBServiceImpl.class);
+	//private static final Logger log = Logger.getLogger(MongoDBServiceImpl.class);
 
 	@Override
 	public List<RtcEventDetail> queryRtcEventDetail(Map<String, Object> condition, String collectionName) throws Exception {
@@ -187,7 +184,7 @@ public class MongoDBServiceImpl implements MongoDBService {
 							roomEventEntity.setStudentName(tempRoomEventEntity.getStudentName());
 							roomEventEntity.setTeacherId(tempRoomEventEntity.getTeacherId());
 							roomEventEntity.setTeacherName(tempRoomEventEntity.getTeacherName());
-							log.debug(String.format("roomId:%1$s>>>>>openCount:%2$s>>>>cancelCount:%3$s>>>>channelSwitch:%4$s",rtcEventEntity.getRoomId(),rtcEventEntity.getOpenCount(),rtcEventEntity.getCancelCount(),rtcEventEntity.getChannelSwitch().length));
+							//log.debug(String.format("roomId:%1$s>>>>>openCount:%2$s>>>>cancelCount:%3$s>>>>channelSwitch:%4$s",rtcEventEntity.getRoomId(),rtcEventEntity.getOpenCount(),rtcEventEntity.getCancelCount(),rtcEventEntity.getChannelSwitch().length));
 							break;
 						}
 					}

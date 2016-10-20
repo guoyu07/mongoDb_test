@@ -15,6 +15,7 @@ import org.bson.conversions.Bson;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.hfjy.base.core.Log;
 import com.hfjy.mongoTest.bean.Condition;
 import com.hfjy.mongoTest.bean.OperationType;
 import com.hfjy.mongoTest.utils.BeanConverterUtils;
@@ -39,7 +40,7 @@ import com.mongodb.client.model.Filters;
  */
 public class MongoDBManager {
 	
-	private static final Logger Log = Logger.getLogger(MongoDBManager.class);
+	//private static final Logger Log = Logger.getLogger(MongoDBManager.class);
 	
 	private  DBCollection dbCollection;
 	
@@ -93,7 +94,7 @@ public class MongoDBManager {
 				}
 			}
 		} catch (Exception e) {
-			Log.error(e.getMessage(), e);
+			Log.error(e,e.getMessage());
 		}
 		return false;
 	}

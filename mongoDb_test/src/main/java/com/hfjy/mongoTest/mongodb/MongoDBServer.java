@@ -8,9 +8,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 
+
 import org.apache.log4j.Logger;
 import org.bson.Document;
 
+import com.hfjy.base.core.Log;
 import com.hfjy.mongoTest.utils.Config;
 import com.hfjy.mongoTest.utils.HttpUtils;
 import com.hfjy.mongoTest.utils.StringUtils;
@@ -27,7 +29,7 @@ import com.mongodb.client.MongoDatabase;
 public class MongoDBServer {
 	private static String prefix = "MONGODB_";
 	
-	private static final Logger Log = Logger.getLogger(MongoDBManager.class);
+	//private static final Logger Log = Logger.getLogger(MongoDBManager.class);
 	
 	private static MongoClient mongoClient = null;
 	// 类初始化时，自行实例化，饿汉式单例模式
@@ -145,7 +147,7 @@ public class MongoDBServer {
 				mongoDatabase.put(dbName, md);
 			}
 		} catch (Exception e) {
-			Log.error(e.getMessage(), e);
+			Log.error(e,e.getMessage());
 		}
 		return md;
 	}
