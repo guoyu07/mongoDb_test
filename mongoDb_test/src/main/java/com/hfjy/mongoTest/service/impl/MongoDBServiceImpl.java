@@ -243,6 +243,7 @@ public class MongoDBServiceImpl implements MongoDBService {
 				initial.put("cancelCount", 0);
 				initial.put("channelSwitch", new String[] {});
 				initial.put("channelSwitchTimes", new Double[] {});
+				initial.put("status", new String[] {});
 				initial.put("lastTime", 0);
 				initial.put("fristTime", 0);
 				condition.put("initial", initial);
@@ -256,7 +257,7 @@ public class MongoDBServiceImpl implements MongoDBService {
 			// reduce
 			sb.append("function(doc,prev){").append("if(doc.userType=='1'){prev.fristTime++;if(prev.fristTime==1){ prev.lastTime=doc.insertTime; }")
 					.append("if(prev.fristTime>=2){prev.channelSwitchTimes.push((doc.insertTime-prev.lastTime)/(1000*60)); prev.lastTime=doc.insertTime } ")
-					.append(" prev.channelSwitch.push(doc.source);prev.operateDesc.push(doc.desc);").append(" if(doc.status=='1' &&!doc.isChange){ prev.openCount++; ")
+					.append(" prev.channelSwitch.push(doc.source);prev.operateDesc.push(doc.desc);prev.status.push(doc.status);").append(" if((doc.status=='1'||doc.status=='2') &&!doc.isChange){ prev.openCount++; ")
 					.append(" }else if(doc.status=='0' &&!doc.isChange){ prev.cancelCount++;} }}");
 			// 执行
 			List<RtcEventEntity> data = (List<RtcEventEntity>) mongoDBManager.group(condition, sb.toString(), RtcEventEntity.class);
@@ -279,6 +280,7 @@ public class MongoDBServiceImpl implements MongoDBService {
 			for (RtcEventEntity rtcEventEntity : data) {
 				String[] sources = rtcEventEntity.getChannelSwitch();
 				Double[] sourceTimes = rtcEventEntity.getChannelSwitchTimes();
+				String[] status = rtcEventEntity.getStatus();
 				// 操作详情描述
 				String[] operateDesc = rtcEventEntity.getOperateDesc();
 				StringBuilder sb = new StringBuilder();

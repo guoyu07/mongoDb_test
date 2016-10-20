@@ -32,6 +32,10 @@ public class RtcEventEntity implements Serializable{
 	 */
 	private String[] operateDesc;
 	/**
+	 * 切换的状态
+	 */
+	private String[] status;
+	/**
 	 * 最后一次切换时间
 	 */
 	private Long lastTime;
@@ -98,5 +102,11 @@ public class RtcEventEntity implements Serializable{
 	}
 	public void setFristTime(Double fristTime) {
 		this.fristTime = fristTime;
+	}
+	public String[] getStatus() {
+		return status;
+	}
+	public void setStatus(String[] status) {
+		this.status = status;
 	}
 }
