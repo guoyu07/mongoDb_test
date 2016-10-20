@@ -23,8 +23,7 @@ import com.hfjy.mongoTest.entity.RtcEventDetail;
 import com.hfjy.mongoTest.entity.RtcEventEntity;
 import com.hfjy.mongoTest.service.MongoDBService;
 import com.hfjy.mongoTest.utils.DateUtils;
-import com.hfjy.mongoTest.utils.StringUtils;
-import com.hfjy.service.xue.mail.SendCloudService;
+import com.hfjy.mongoTest.utils.StringUtils; 
 
 /**
  * mongoDB 查询的controller
@@ -206,7 +205,7 @@ public class MongoDBController {
 		sb.append("</table>");
 		// 调用发送邮件方法
 		Map<String, Object> resMap=new HashMap<>();
-		resMap.put("desc", SendCloudService.sendStudyConditionReport(sb.toString()));
+//		resMap.put("desc", SendCloudService.sendStudyConditionReport(sb.toString()));
 		return resMap;
 	}
 

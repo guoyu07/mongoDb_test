@@ -29,12 +29,12 @@ package com.hfjy.mongoTest;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
-import org.codehaus.jackson.annotate.JsonUnwrapped;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,14 +42,15 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.alibaba.fastjson.JSON;
-import com.hfjy.base.util.JSONUtil;
+import com.alibaba.fastjson.JSONObject;
+import com.hfjy.mongoTest.bean.Condition;
 import com.hfjy.mongoTest.entity.RoomEventDetail;
 import com.hfjy.mongoTest.entity.RoomEventEntity;
+import com.hfjy.mongoTest.entity.RtcEventDetail;
 import com.hfjy.mongoTest.entity.RtcEventEntity;
+import com.hfjy.mongoTest.mongodb.MongoDBManager;
 import com.hfjy.mongoTest.service.MongoDBService;
-import com.hfjy.mongoTest.utils.DateUtils;
 import com.hfjy.mongoTest.utils.StringUtils;
-import com.hfjy.service.xue.mail.SendCloudService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration("classpath:com/hfjy/mongoTest/spring.xml")
@@ -199,7 +200,8 @@ public class MongoTest {
 	@Test
 	public void testReport() throws Exception{
 		Map<String, Object> studyConditionReport = getStudyConditionReport();
-		// 准备邮件格式
+		System.out.println(JSONObject.toJSONString(studyConditionReport, true));
+		/*// 准备邮件格式
 		StringBuffer sb = new StringBuffer();
 		sb.append("<table border=\"1\" >");
 		sb.append("<tr>");
@@ -224,7 +226,7 @@ public class MongoTest {
 		sb.append("</tr>");
 		sb.append("</table>");
 		// 调用发送邮件方法
-		System.out.println(SendCloudService.sendStudyConditionReport(sb.toString()));
+		System.out.println(SendCloudService.sendStudyConditionReport(sb.toString()));*/
 	}
 	
 	private Map<String, Object> getStudyConditionReport() throws Exception {
@@ -310,5 +312,19 @@ public class MongoTest {
 //		System.out.println(JSON.toJSONString(result, true));
 		return result;
 	}
-
+	
+	@Test
+	public void test(){
+		MongoDBManager mongoDBManager = new MongoDBManager("admin", "RtcEvent");
+		Condition cond = Condition.init();
+		Condition cond2 = Condition.init();
+		Pattern pattern = Pattern.compile("^.*测试.*$", Pattern.CASE_INSENSITIVE);
+		cond.like("userName", pattern.toString());
+		cond2.not(cond);
+		cond2.is("status", "2");
+		Collection<RtcEventDetail> rtcEventDetails = mongoDBManager.find(cond2, RtcEventDetail.class);
+		for (RtcEventDetail rtcEventDetail : rtcEventDetails) {
+			System.out.println(rtcEventDetail.getUserName());
+		}
+	}
 }
