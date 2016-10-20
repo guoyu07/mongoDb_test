@@ -171,6 +171,12 @@
 		
 		<dependency>
 			<groupId>com.hfjy</groupId>
+			<artifactId>base.core</artifactId>
+			<version>1.0.2-SNAPSHOT</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.hfjy</groupId>
 			<artifactId>service.xue.message</artifactId>
 			<version>1.0.1-SNAPSHOT</version>
 		</dependency>

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.hfjy.base.core.Log;
 import com.hfjy.mongoTest.entity.RoomEventDetail;
 import com.hfjy.mongoTest.entity.RoomEventEntity;
 import com.hfjy.mongoTest.entity.RtcEventDetail;
@@ -36,7 +37,7 @@ import com.hfjy.mongoTest.utils.StringUtils;
 public class MongoDBController {
 	@Autowired
 	private MongoDBService mongoDBService;
-	private static final Logger log = Logger.getLogger(MongoDBController.class);
+	//private static final Logger log = Logger.getLogger(MongoDBController.class);
 
 	/**
 	 * 查询维度，根据roomId查询房间具体日志信息
@@ -61,7 +62,7 @@ public class MongoDBController {
 			model.addAttribute("roomEvents", roomEvents);
 		} catch (Exception e) {
 			e.printStackTrace();
-			log.debug(e.getMessage());
+			Log.warn(e,e.getMessage());
 		}
 		return "modules/bi/detailInfoLogs";
 	}
@@ -88,7 +89,7 @@ public class MongoDBController {
 		try {
 			data = mongoDBService.groupByLessonCount(coMap, "lessonCountLog");
 		} catch (Exception e) {
-			log.debug(e.getMessage());
+			Log.warn(e,e.getMessage());
 			e.getMessage();
 		}
 		return data;
@@ -135,7 +136,7 @@ public class MongoDBController {
 			model.addAttribute("roomEvents", data);
 		} catch (Exception e) {
 			e.printStackTrace();
-			log.debug(e.getMessage());
+			Log.warn(e,e.getMessage());
 		}
 		return "modules/bi/bi";
 	}
@@ -169,7 +170,7 @@ public class MongoDBController {
 				dataMap.put("code", 0);
 			}
 		} catch (Exception e) {
-			log.debug(e.getMessage());
+			Log.warn(e,e.getMessage());
 			e.printStackTrace();
 		}
 		return dataMap;
@@ -209,6 +210,7 @@ public class MongoDBController {
 		return resMap;
 	}
 
+	
 	private Map<String, Object> getStudyConditionReport() throws Exception {
 		HashMap<String, Object> condition = new HashMap<>();
 		int experienceLessons = 0;
