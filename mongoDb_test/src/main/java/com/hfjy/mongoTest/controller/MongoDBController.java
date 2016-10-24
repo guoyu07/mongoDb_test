@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,8 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.hfjy.base.core.Log;
 import com.hfjy.mongoTest.entity.RoomEventDetail;
 import com.hfjy.mongoTest.entity.RoomEventEntity;
@@ -24,7 +21,8 @@ import com.hfjy.mongoTest.entity.RtcEventDetail;
 import com.hfjy.mongoTest.entity.RtcEventEntity;
 import com.hfjy.mongoTest.service.MongoDBService;
 import com.hfjy.mongoTest.utils.DateUtils;
-import com.hfjy.mongoTest.utils.StringUtils; 
+import com.hfjy.mongoTest.utils.StringUtils;
+import com.hfjy.service.xue.mail.SendCloudService; 
 
 /**
  * mongoDB 查询的controller
@@ -206,7 +204,7 @@ public class MongoDBController {
 		sb.append("</table>");
 		// 调用发送邮件方法
 		Map<String, Object> resMap=new HashMap<>();
-//		resMap.put("desc", SendCloudService.sendStudyConditionReport(sb.toString()));
+		resMap.put("desc", SendCloudService.sendStudyConditionReport(sb.toString()));
 		return resMap;
 	}
 

@@ -18,6 +18,7 @@ import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
+import com.hfjy.base.core.Log;
 import com.hfjy.mongoTest.bean.Condition;
 import com.hfjy.mongoTest.bean.DateType;
 import com.hfjy.mongoTest.entity.RoomEventDetail;
@@ -184,7 +185,7 @@ public class MongoDBServiceImpl implements MongoDBService {
 							roomEventEntity.setStudentName(tempRoomEventEntity.getStudentName());
 							roomEventEntity.setTeacherId(tempRoomEventEntity.getTeacherId());
 							roomEventEntity.setTeacherName(tempRoomEventEntity.getTeacherName());
-							//log.debug(String.format("roomId:%1$s>>>>>openCount:%2$s>>>>cancelCount:%3$s>>>>channelSwitch:%4$s",rtcEventEntity.getRoomId(),rtcEventEntity.getOpenCount(),rtcEventEntity.getCancelCount(),rtcEventEntity.getChannelSwitch().length));
+							Log.debug(String.format("roomId:%1$s>>>>>openCount:%2$s>>>>cancelCount:%3$s>>>>channelSwitch:%4$s",rtcEventEntity.getRoomId(),rtcEventEntity.getOpenCount(),rtcEventEntity.getCancelCount(),rtcEventEntity.getChannelSwitch().length));
 							break;
 						}
 					}

@@ -51,6 +51,7 @@ import com.hfjy.mongoTest.entity.RtcEventEntity;
 import com.hfjy.mongoTest.mongodb.MongoDBManager;
 import com.hfjy.mongoTest.service.MongoDBService;
 import com.hfjy.mongoTest.utils.StringUtils;
+import com.hfjy.service.xue.mail.SendCloudService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration("classpath:com/hfjy/mongoTest/spring.xml")
@@ -201,7 +202,7 @@ public class MongoTest {
 	public void testReport() throws Exception{
 		Map<String, Object> studyConditionReport = getStudyConditionReport();
 		System.out.println(JSONObject.toJSONString(studyConditionReport, true));
-		/*// 准备邮件格式
+		// 准备邮件格式
 		StringBuffer sb = new StringBuffer();
 		sb.append("<table border=\"1\" >");
 		sb.append("<tr>");
@@ -226,7 +227,7 @@ public class MongoTest {
 		sb.append("</tr>");
 		sb.append("</table>");
 		// 调用发送邮件方法
-		System.out.println(SendCloudService.sendStudyConditionReport(sb.toString()));*/
+		System.out.println(SendCloudService.sendStudyConditionReport(sb.toString()));
 	}
 	
 	private Map<String, Object> getStudyConditionReport() throws Exception {
