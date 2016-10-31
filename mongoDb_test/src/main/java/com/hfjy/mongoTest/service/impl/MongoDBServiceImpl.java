@@ -449,7 +449,7 @@ public class MongoDBServiceImpl implements MongoDBService {
 					sb.append("function(doc,prev){ prev.courseName=doc.courseName; if(doc.userType=='1'){prev.teacherName=doc.userName;}else if(doc.userType=='0'){prev.studentName=doc.userName; }  ");
 					sb.append("if(doc.status=='3'&&doc.userType=='0'){prev.eventDescs.push(doc.event);prev.eventTimes.push(doc.insertTime);}}  ");
 					Map<String, Object> dates = new HashMap<String, Object>();
-					String formatDate = DateUtils.formatDate(DateUtils.nextDate(new Date(), DateType.DAY, -2), "yyyy-MM-dd");
+					String formatDate = DateUtils.formatDate(DateUtils.nextDate(new Date(), DateType.DAY, -1), "yyyy-MM-dd");
 					Date startDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(formatDate+" 00:00:00");
 					Date endDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(formatDate+" 23:59:59");
 					dates.put("$gte", startDate.getTime());
