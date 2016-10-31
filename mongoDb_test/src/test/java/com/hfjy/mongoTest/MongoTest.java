@@ -160,7 +160,7 @@ public class MongoTest {
 		if (list.contains("结束上课")) {
 			int i = list.indexOf("结束上课");
 			endTime = Long.parseLong(roomEventDetails.get(i).getInsertTime());
-		}else {
+		}else if (list.contains("退出")){
 			int i = list.indexOf("退出");
 			endTime = Long.parseLong(roomEventDetails.get(i).getInsertTime());
 		}
@@ -199,7 +199,7 @@ public class MongoTest {
 	}
 	
 	@Test
-	public void testReport() throws Exception{
+	public void sendMailReport() throws Exception{
 		Map<String, Object> studyConditionReport = getStudyConditionReport();
 		System.out.println(JSONObject.toJSONString(studyConditionReport, true));
 		// 准备邮件格式

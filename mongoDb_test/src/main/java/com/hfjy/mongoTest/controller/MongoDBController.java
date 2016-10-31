@@ -22,7 +22,7 @@ import com.hfjy.mongoTest.entity.RtcEventEntity;
 import com.hfjy.mongoTest.service.MongoDBService;
 import com.hfjy.mongoTest.utils.DateUtils;
 import com.hfjy.mongoTest.utils.StringUtils;
-import com.hfjy.service.xue.mail.SendCloudService; 
+import com.hfjy.service.xue.mail.SendCloudService;
 
 /**
  * mongoDB 查询的controller
@@ -35,7 +35,8 @@ import com.hfjy.service.xue.mail.SendCloudService;
 public class MongoDBController {
 	@Autowired
 	private MongoDBService mongoDBService;
-	//private static final Logger log = Logger.getLogger(MongoDBController.class);
+	// private static final Logger log =
+	// Logger.getLogger(MongoDBController.class);
 
 	/**
 	 * 查询维度，根据roomId查询房间具体日志信息
@@ -60,7 +61,7 @@ public class MongoDBController {
 			model.addAttribute("roomEvents", roomEvents);
 		} catch (Exception e) {
 			e.printStackTrace();
-			Log.warn(e,e.getMessage());
+			Log.warn(e, e.getMessage());
 		}
 		return "modules/bi/detailInfoLogs";
 	}
@@ -87,7 +88,7 @@ public class MongoDBController {
 		try {
 			data = mongoDBService.groupByLessonCount(coMap, "lessonCountLog");
 		} catch (Exception e) {
-			Log.warn(e,e.getMessage());
+			Log.warn(e, e.getMessage());
 			e.getMessage();
 		}
 		return data;
@@ -134,7 +135,7 @@ public class MongoDBController {
 			model.addAttribute("roomEvents", data);
 		} catch (Exception e) {
 			e.printStackTrace();
-			Log.warn(e,e.getMessage());
+			Log.warn(e, e.getMessage());
 		}
 		return "modules/bi/bi";
 	}
@@ -168,7 +169,7 @@ public class MongoDBController {
 				dataMap.put("code", 0);
 			}
 		} catch (Exception e) {
-			Log.warn(e,e.getMessage());
+			Log.warn(e, e.getMessage());
 			e.printStackTrace();
 		}
 		return dataMap;
@@ -203,12 +204,11 @@ public class MongoDBController {
 		sb.append("</tr>");
 		sb.append("</table>");
 		// 调用发送邮件方法
-		Map<String, Object> resMap=new HashMap<>();
+		Map<String, Object> resMap = new HashMap<>();
 		resMap.put("desc", SendCloudService.sendStudyConditionReport(sb.toString()));
 		return resMap;
 	}
 
-	
 	private Map<String, Object> getStudyConditionReport() throws Exception {
 		HashMap<String, Object> condition = new HashMap<>();
 		int experienceLessons = 0;
@@ -288,8 +288,8 @@ public class MongoDBController {
 		for (int i = 0; i < reviewTimes.size(); i++) {
 			sb.append(reviewTimes.get(i) + ";");
 		}
-//		System.out.println(sb.toString());
-//		System.out.println(JSON.toJSONString(result, true));
+		// System.out.println(sb.toString());
+		// System.out.println(JSON.toJSONString(result, true));
 		return result;
 	}
 
@@ -308,11 +308,10 @@ public class MongoDBController {
 		if (list.contains("结束上课")) {
 			int i = list.indexOf("结束上课");
 			endTime = Long.parseLong(roomEventDetails.get(i).getInsertTime());
-		} else {
+		} else if (list.contains("退出")) {
 			int i = list.indexOf("退出");
 			endTime = Long.parseLong(roomEventDetails.get(i).getInsertTime());
-		}
-		if (list.contains("开始上课")) {
+		} else if (list.contains("开始上课")) {
 			int i = list.indexOf("开始上课");
 			startTime = Long.parseLong(roomEventDetails.get(i).getInsertTime());
 		}
@@ -340,7 +339,8 @@ public class MongoDBController {
 				if (eventDescs.get(i).equals("进入") && eventDescs.get(i + 1).equals("退出")) {
 					String enterTime = eventTimes.get(i);
 					String existTime = eventTimes.get(i + 1);
-//					System.out.println(">>>>>>>" + (Long.parseLong(existTime) - Long.parseLong(enterTime)) / (1000 * 60));
+					// System.out.println(">>>>>>>" + (Long.parseLong(existTime)
+					// - Long.parseLong(enterTime)) / (1000 * 60));
 					reviewTimes.add((Long.parseLong(existTime) - Long.parseLong(enterTime)) / (1000 * 60));
 				}
 			}
