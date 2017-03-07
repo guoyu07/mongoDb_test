@@ -29,6 +29,7 @@ import com.hfjy.mongoTest.entity.RoomEventEntity;
 import com.hfjy.mongoTest.entity.RtcEventDetail;
 import com.hfjy.mongoTest.entity.RtcEventEntity;
 import com.hfjy.mongoTest.mongodb.MongoDBManager;
+import com.hfjy.mongoTest.mongodb.MongoDBServer;
 import com.hfjy.mongoTest.service.MongoDBService;
 import com.hfjy.mongoTest.utils.DateUtils;
 import com.hfjy.mongoTest.utils.StringUtils;
@@ -473,34 +474,38 @@ public class MongoDBServiceImpl implements MongoDBService {
 	public void saveUserRoomEvent() throws Exception {
 		DB db = DB.getDB();
 		List<JSONObject> lessonPlanIds = db.query("SELECT l.lesson_plan_id lessonPlanId FROM lesson_plan l WHERE l.plan_end_time BETWEEN DATE_SUB(now(), INTERVAL 1 DAY) AND now() and l.status=3 ");
-		for (JSONObject lessonPlanIdObj : lessonPlanIds) {
-			String lessonPlanId = lessonPlanIdObj.getString("lessonPlanId");
-			MongoDBManager mongoDBManager = new MongoDBManager("admin", "RoomEvent");
-			BasicDBObject condition = new BasicDBObject();// 条件
-			condition.append("roomId", lessonPlanId);
-			BasicDBObject key = new BasicDBObject("userId", 1);// 指定需要显示列
-			key.append("roomId", 1);
-			key.append("insertTime", 1);
-			key.append("event", 1);
-			key.append("userType", 1);
-			key.append("_id", 0);
-			Collection<JSONObject> roomEventDetails = mongoDBManager.find(condition, key, JSONObject.class);
-			if (roomEventDetails.isEmpty()) {
-				String errorMsg = "lesson_plan_id:" + lessonPlanId + "在mongodb中无RoomEvent信息！";
-				log.error(errorMsg);
-				throw new RuntimeException(errorMsg);
-			}
-			List<Object[]> insertlist = new ArrayList<Object[]>();
-			for (JSONObject jsonObject : roomEventDetails) {
-				Integer roomId = Integer.parseInt(jsonObject.getString("roomId"));
-				Integer userId = Integer.parseInt(jsonObject.getString("userId"));
-				Integer userType = Integer.parseInt(jsonObject.getString("userType"));
-				Date insertTime = new Date(jsonObject.getLong("insertTime"));
-				String event = jsonObject.getString("event");
-				insertlist.add(new Object[] { roomId, userId, userType, insertTime, event });
+		try {
+			for (JSONObject lessonPlanIdObj : lessonPlanIds) {
+				String lessonPlanId = lessonPlanIdObj.getString("lessonPlanId");
+				MongoDBManager mongoDBManager = new MongoDBManager("admin", "RoomEvent");
+				BasicDBObject condition = new BasicDBObject();// 条件
+				condition.append("roomId", lessonPlanId);
+				BasicDBObject key = new BasicDBObject("userId", 1);// 指定需要显示列
+				key.append("roomId", 1);
+				key.append("insertTime", 1);
+				key.append("event", 1);
+				key.append("userType", 1);
+				key.append("_id", 0);
+				Collection<JSONObject> roomEventDetails = mongoDBManager.find(condition, key, JSONObject.class);
+				if (roomEventDetails.isEmpty()) {
+					String errorMsg = "lesson_plan_id:" + lessonPlanId + "在mongodb中无RoomEvent信息！";
+					log.error(errorMsg);
+					throw new RuntimeException(errorMsg);
+				}
+				List<Object[]> insertlist = new ArrayList<Object[]>();
+				for (JSONObject jsonObject : roomEventDetails) {
+					Integer roomId = Integer.parseInt(jsonObject.getString("roomId"));
+					Integer userId = Integer.parseInt(jsonObject.getString("userId"));
+					Integer userType = Integer.parseInt(jsonObject.getString("userType"));
+					Date insertTime = new Date(jsonObject.getLong("insertTime"));
+					String event = jsonObject.getString("event");
+					insertlist.add(new Object[] { roomId, userId, userType, insertTime, event });
 
+				}
+				db.batchUpdate("insert into analysis_user_room_event(lesson_plan_id,user_id,user_type,insert_time,event) values(?,?,?,?,?)", insertlist);
 			}
-			db.batchUpdate("insert into analysis_user_room_event(lesson_plan_id,user_id,user_type,insert_time,event) values(?,?,?,?,?)", insertlist);
+		} finally {
+			MongoDBServer.poolClose();
 		}
 
 	}

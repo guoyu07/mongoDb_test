@@ -111,12 +111,10 @@ public class MongoDBManager {
 			return resultList;
 		} catch (Exception e) {
 			throw new RuntimeException(e.getMessage());
-		} finally {
-			if (null != cursor) {
-				cursor.close();
-			}
-			MongoDBServer.poolClose();
-		}
+		} /*
+			 * finally { if (null != cursor) { cursor.close(); }
+			 * MongoDBServer.poolClose(); }
+			 */
 
 	}
 
