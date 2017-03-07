@@ -16,9 +16,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.hfjy.base.core.Log;
+import com.hfjy.base.core.io.DB;
 import com.hfjy.mongoTest.bean.Condition;
 import com.hfjy.mongoTest.bean.DateType;
 import com.hfjy.mongoTest.entity.RoomEventDetail;
@@ -29,6 +32,7 @@ import com.hfjy.mongoTest.mongodb.MongoDBManager;
 import com.hfjy.mongoTest.service.MongoDBService;
 import com.hfjy.mongoTest.utils.DateUtils;
 import com.hfjy.mongoTest.utils.StringUtils;
+import com.mongodb.BasicDBObject;
 
 @Service(value = "MongoDBService")
 public class MongoDBServiceImpl implements MongoDBService {
@@ -38,7 +42,7 @@ public class MongoDBServiceImpl implements MongoDBService {
 	private static final String dataBase = "admin";
 
 	private MongoDBManager mongoDBManager = null;
-	//private static final Logger log = Logger.getLogger(MongoDBServiceImpl.class);
+	private static final Logger log = Logger.getLogger(MongoDBServiceImpl.class);
 
 	@Override
 	public List<RtcEventDetail> queryRtcEventDetail(Map<String, Object> condition, String collectionName) throws Exception {
@@ -50,7 +54,7 @@ public class MongoDBServiceImpl implements MongoDBService {
 		//
 		Condition cond = Condition.init();
 		if (condition.size() > 0) {
-			// 
+			//
 			for (Map.Entry<String, Object> entry : condition.entrySet()) {
 				cond.is(entry.getKey(), entry.getValue());
 			}
@@ -185,7 +189,8 @@ public class MongoDBServiceImpl implements MongoDBService {
 							roomEventEntity.setStudentName(tempRoomEventEntity.getStudentName());
 							roomEventEntity.setTeacherId(tempRoomEventEntity.getTeacherId());
 							roomEventEntity.setTeacherName(tempRoomEventEntity.getTeacherName());
-							Log.debug(String.format("roomId:%1$s>>>>>openCount:%2$s>>>>cancelCount:%3$s>>>>channelSwitch:%4$s",rtcEventEntity.getRoomId(),rtcEventEntity.getOpenCount(),rtcEventEntity.getCancelCount(),rtcEventEntity.getChannelSwitch().length));
+							Log.debug(String.format("roomId:%1$s>>>>>openCount:%2$s>>>>cancelCount:%3$s>>>>channelSwitch:%4$s", rtcEventEntity.getRoomId(), rtcEventEntity.getOpenCount(),
+									rtcEventEntity.getCancelCount(), rtcEventEntity.getChannelSwitch().length));
 							break;
 						}
 					}
@@ -258,8 +263,8 @@ public class MongoDBServiceImpl implements MongoDBService {
 			// reduce
 			sb.append("function(doc,prev){").append("if(doc.userType=='1'){prev.fristTime++;if(prev.fristTime==1){ prev.lastTime=doc.insertTime; }")
 					.append("if(prev.fristTime>=2){prev.channelSwitchTimes.push((doc.insertTime-prev.lastTime)/(1000*60)); prev.lastTime=doc.insertTime } ")
-					.append(" prev.channelSwitch.push(doc.source);prev.operateDesc.push(doc.desc);prev.status.push(doc.status);").append(" if((doc.status=='1'||doc.status=='2') &&!doc.isChange){ prev.openCount++; ")
-					.append(" }else if(doc.status=='0' &&!doc.isChange){ prev.cancelCount++;} }}");
+					.append(" prev.channelSwitch.push(doc.source);prev.operateDesc.push(doc.desc);prev.status.push(doc.status);")
+					.append(" if((doc.status=='1'||doc.status=='2') &&!doc.isChange){ prev.openCount++; ").append(" }else if(doc.status=='0' &&!doc.isChange){ prev.cancelCount++;} }}");
 			// 执行
 			List<RtcEventEntity> data = (List<RtcEventEntity>) mongoDBManager.group(condition, sb.toString(), RtcEventEntity.class);
 
@@ -288,13 +293,13 @@ public class MongoDBServiceImpl implements MongoDBService {
 				int operateDescLength = operateDesc.length;
 				if (null != operateDesc && operateDescLength > 0) {
 					// 判断operateDesc中“打开”或“关闭”
-					if (Arrays.asList(operateDesc).indexOf("打开")==operateDescLength-1) {
-						sb.append(sources[operateDescLength-1] + "(120)");// 默认120分钟
+					if (Arrays.asList(operateDesc).indexOf("打开") == operateDescLength - 1) {
+						sb.append(sources[operateDescLength - 1] + "(120)");// 默认120分钟
 						rtcEventEntity.setChannelInfo(sb.toString());
 						result.add(rtcEventEntity);
 						continue;
-						//为了解决sources为空的情况，加了一层判断
-					}else if (operateDescLength >= 1 && StringUtils.validateCollectionItemsIsSameOrNot(Arrays.asList(operateDesc), "关闭")) {
+						// 为了解决sources为空的情况，加了一层判断
+					} else if (operateDescLength >= 1 && StringUtils.validateCollectionItemsIsSameOrNot(Arrays.asList(operateDesc), "关闭")) {
 						sb.append("没有使用语音！");
 						rtcEventEntity.setChannelInfo(sb.toString());
 						result.add(rtcEventEntity);
@@ -375,9 +380,9 @@ public class MongoDBServiceImpl implements MongoDBService {
 	}
 
 	public static void main(String[] args) throws ParseException {
-		Date d = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(DateUtils.formatDate(DateUtils.nextDate(new Date(), DateType.DAY, -1), "yyyy-MM-dd")+" 00:00:00");
-		 Calendar c = Calendar.getInstance();
-//		 c.setTime(d);
+		Date d = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(DateUtils.formatDate(DateUtils.nextDate(new Date(), DateType.DAY, -1), "yyyy-MM-dd") + " 00:00:00");
+		Calendar c = Calendar.getInstance();
+		// c.setTime(d);
 		System.out.println(d.getTime());
 		System.out.println((Long.parseLong("1461989231508") - Long.parseLong("1461848247648")) / (1000 * 60));
 	}
@@ -420,49 +425,84 @@ public class MongoDBServiceImpl implements MongoDBService {
 	}
 
 	@Override
-	public List<RoomEventEntity> studyConditionReport(Map<String, Object> condition,String status, String collectionName) throws Exception {
+	public List<RoomEventEntity> studyConditionReport(Map<String, Object> condition, String status, String collectionName) throws Exception {
 		// 校验
-				if (StringUtils.isEmpty(collectionName)) {
-					throw new Exception("没有表信息");
-				}
-				mongoDBManager = new MongoDBManager(dataBase, collectionName);
-				// 条件和参数
-				StringBuffer sb = new StringBuffer();
-				if (null != condition) {
-					if (condition.get("key") == null) {
-						condition.put("key", "roomId");
-					}
-					if (condition.get("initial") == null) {
-						Map<String, Object> initial = new HashMap<String, Object>();
-						initial.put("courseName", "");
-						initial.put("studentName", "");
-						initial.put("teacherName", "");
-						initial.put("eventDescs", new String[]{});
-						initial.put("eventTimes", new String[]{});
-						condition.put("initial", initial);
-					}
-					// 根据roomId查询
-					Map<String, Object> cond = new HashMap<String, Object>();
-					if (condition.get("roomId") != null) {
-						cond.put("roomId", condition.get("roomId"));
-					}
-					sb.append("function(doc,prev){ prev.courseName=doc.courseName; if(doc.userType=='1'){prev.teacherName=doc.userName;}else if(doc.userType=='0'){prev.studentName=doc.userName; }  ");
-					sb.append("if(doc.status=='3'&&doc.userType=='0'){prev.eventDescs.push(doc.event);prev.eventTimes.push(doc.insertTime);}}  ");
-					Map<String, Object> dates = new HashMap<String, Object>();
-					String formatDate = DateUtils.formatDate(DateUtils.nextDate(new Date(), DateType.DAY, -1), "yyyy-MM-dd");
-					Date startDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(formatDate+" 00:00:00");
-					Date endDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(formatDate+" 23:59:59");
-					dates.put("$gte", startDate.getTime());
-					dates.put("$lte", endDate.getTime());
-					cond.put("insertTime", dates);
-					cond.put("status", status);
-					condition.put("cond", cond);
-					Collection<RoomEventEntity> roomEventEntitys = mongoDBManager.group(condition, sb.toString(), RoomEventEntity.class);
-					return (List<RoomEventEntity>) roomEventEntitys;
-				}
-				return null;
-	
-	
+		if (StringUtils.isEmpty(collectionName)) {
+			throw new Exception("没有表信息");
+		}
+		mongoDBManager = new MongoDBManager(dataBase, collectionName);
+		// 条件和参数
+		StringBuffer sb = new StringBuffer();
+		if (null != condition) {
+			if (condition.get("key") == null) {
+				condition.put("key", "roomId");
+			}
+			if (condition.get("initial") == null) {
+				Map<String, Object> initial = new HashMap<String, Object>();
+				initial.put("courseName", "");
+				initial.put("studentName", "");
+				initial.put("teacherName", "");
+				initial.put("eventDescs", new String[] {});
+				initial.put("eventTimes", new String[] {});
+				condition.put("initial", initial);
+			}
+			// 根据roomId查询
+			Map<String, Object> cond = new HashMap<String, Object>();
+			if (condition.get("roomId") != null) {
+				cond.put("roomId", condition.get("roomId"));
+			}
+			sb.append("function(doc,prev){ prev.courseName=doc.courseName; if(doc.userType=='1'){prev.teacherName=doc.userName;}else if(doc.userType=='0'){prev.studentName=doc.userName; }  ");
+			sb.append("if(doc.status=='3'&&doc.userType=='0'){prev.eventDescs.push(doc.event);prev.eventTimes.push(doc.insertTime);}}  ");
+			Map<String, Object> dates = new HashMap<String, Object>();
+			String formatDate = DateUtils.formatDate(DateUtils.nextDate(new Date(), DateType.DAY, -1), "yyyy-MM-dd");
+			Date startDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(formatDate + " 00:00:00");
+			Date endDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(formatDate + " 23:59:59");
+			dates.put("$gte", startDate.getTime());
+			dates.put("$lte", endDate.getTime());
+			cond.put("insertTime", dates);
+			cond.put("status", status);
+			condition.put("cond", cond);
+			Collection<RoomEventEntity> roomEventEntitys = mongoDBManager.group(condition, sb.toString(), RoomEventEntity.class);
+			return (List<RoomEventEntity>) roomEventEntitys;
+		}
+		return null;
+
+	}
+
+	@Override
+	public void saveUserRoomEvent() throws Exception {
+		DB db = DB.getDB();
+		List<JSONObject> lessonPlanIds = db.query("SELECT l.lesson_plan_id lessonPlanId FROM lesson_plan l WHERE l.plan_end_time BETWEEN DATE_SUB(now(), INTERVAL 1 DAY) AND now() and l.status=3 ");
+		for (JSONObject lessonPlanIdObj : lessonPlanIds) {
+			String lessonPlanId = lessonPlanIdObj.getString("lessonPlanId");
+			MongoDBManager mongoDBManager = new MongoDBManager("admin", "RoomEvent");
+			BasicDBObject condition = new BasicDBObject();// 条件
+			condition.append("roomId", lessonPlanId);
+			BasicDBObject key = new BasicDBObject("userId", 1);// 指定需要显示列
+			key.append("roomId", 1);
+			key.append("insertTime", 1);
+			key.append("event", 1);
+			key.append("userType", 1);
+			key.append("_id", 0);
+			Collection<JSONObject> roomEventDetails = mongoDBManager.find(condition, key, JSONObject.class);
+			if (roomEventDetails.isEmpty()) {
+				String errorMsg = "lesson_plan_id:" + lessonPlanId + "在mongodb中无RoomEvent信息！";
+				log.error(errorMsg);
+				throw new RuntimeException(errorMsg);
+			}
+			List<Object[]> insertlist = new ArrayList<Object[]>();
+			for (JSONObject jsonObject : roomEventDetails) {
+				Integer roomId = Integer.parseInt(jsonObject.getString("roomId"));
+				Integer userId = Integer.parseInt(jsonObject.getString("userId"));
+				Integer userType = Integer.parseInt(jsonObject.getString("userType"));
+				Date insertTime = new Date(jsonObject.getLong("insertTime"));
+				String event = jsonObject.getString("event");
+				insertlist.add(new Object[] { roomId, userId, userType, insertTime, event });
+
+			}
+			db.batchUpdate("insert into analysis_user_room_event(lesson_plan_id,user_id,user_type,insert_time,event) values(?,?,?,?,?)", insertlist);
+		}
+
 	}
 
 }

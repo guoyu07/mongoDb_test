@@ -30,6 +30,7 @@ package com.hfjy.mongoTest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +44,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.hfjy.base.core.Log;
+import com.hfjy.base.core.io.DB;
 import com.hfjy.mongoTest.bean.Condition;
 import com.hfjy.mongoTest.entity.RoomEventDetail;
 import com.hfjy.mongoTest.entity.RoomEventEntity;
@@ -51,7 +54,7 @@ import com.hfjy.mongoTest.entity.RtcEventEntity;
 import com.hfjy.mongoTest.mongodb.MongoDBManager;
 import com.hfjy.mongoTest.service.MongoDBService;
 import com.hfjy.mongoTest.utils.StringUtils;
-import com.hfjy.service.xue.mail.SendCloudService;
+import com.mongodb.BasicDBObject;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration("classpath:com/hfjy/mongoTest/spring.xml")
@@ -146,12 +149,12 @@ public class MongoTest {
 	}
 
 	public int reportStudyInterrupt(String roomId) throws Exception {
-		int studyInterruptTimes=0;
+		int studyInterruptTimes = 0;
 		Map<String, Object> con = new HashMap<String, Object>();
 		con.put("roomId", roomId);
 		List<RoomEventDetail> roomEventDetails = mongoDBService.queryRoomEventDetail(con, "RoomEvent");
-		long endTime=0;
-		long startTime=0;
+		long endTime = 0;
+		long startTime = 0;
 		List<String> list = new ArrayList<>();
 		for (RoomEventDetail roomEventDetail : roomEventDetails) {
 			String event = roomEventDetail.getEvent();
@@ -160,7 +163,7 @@ public class MongoTest {
 		if (list.contains("结束上课")) {
 			int i = list.indexOf("结束上课");
 			endTime = Long.parseLong(roomEventDetails.get(i).getInsertTime());
-		}else if (list.contains("退出")){
+		} else if (list.contains("退出")) {
 			int i = list.indexOf("退出");
 			endTime = Long.parseLong(roomEventDetails.get(i).getInsertTime());
 		}
@@ -168,38 +171,39 @@ public class MongoTest {
 			int i = list.indexOf("开始上课");
 			startTime = Long.parseLong(roomEventDetails.get(i).getInsertTime());
 		}
-		
-		if ((endTime-startTime)>3600000) {
+
+		if ((endTime - startTime) > 3600000) {
 			studyInterruptTimes++;
 		}
 		return studyInterruptTimes;
 	}
-	
+
 	/**
 	 * TODO(统计回顾时间)
-	 * @author: no_relax 
+	 * 
+	 * @author: no_relax
 	 * @Title: reportReviewTimes
 	 * @param eventDescs
 	 * @param eventTimes
 	 * @return List<Object>
 	 * @since Vphone1.3.0
-	*/
-	public List<Object> reportReviewTimes(List<String> eventDescs,List<String> eventTimes){
-		List<Object> reviewTimes=new ArrayList<>();
+	 */
+	public List<Object> reportReviewTimes(List<String> eventDescs, List<String> eventTimes) {
+		List<Object> reviewTimes = new ArrayList<>();
 		for (int i = 0; i < eventDescs.size(); i++) {
-			if (i+1<eventDescs.size()) {
-				if (eventDescs.get(i).equals("进入")&&eventDescs.get(i+1).equals("退出")) {
+			if (i + 1 < eventDescs.size()) {
+				if (eventDescs.get(i).equals("进入") && eventDescs.get(i + 1).equals("退出")) {
 					String enterTime = eventTimes.get(i);
-					String existTime = eventTimes.get(i+1);
-					reviewTimes.add((Long.parseLong(existTime)-Long.parseLong(enterTime))/(1000*60));
+					String existTime = eventTimes.get(i + 1);
+					reviewTimes.add((Long.parseLong(existTime) - Long.parseLong(enterTime)) / (1000 * 60));
 				}
 			}
 		}
 		return reviewTimes;
 	}
-	
+
 	@Test
-	public void sendMailReport() throws Exception{
+	public void sendMailReport() throws Exception {
 		Map<String, Object> studyConditionReport = getStudyConditionReport();
 		System.out.println(JSONObject.toJSONString(studyConditionReport, true));
 		// 准备邮件格式
@@ -227,9 +231,9 @@ public class MongoTest {
 		sb.append("</tr>");
 		sb.append("</table>");
 		// 调用发送邮件方法
-		System.out.println(SendCloudService.sendStudyConditionReport(sb.toString()));
+		// System.out.println(SendCloudService.sendStudyConditionReport(sb.toString()));
 	}
-	
+
 	private Map<String, Object> getStudyConditionReport() throws Exception {
 		HashMap<String, Object> condition = new HashMap<>();
 		int experienceLessons = 0;
@@ -291,7 +295,8 @@ public class MongoTest {
 			List<String> eventTimes = Arrays.asList(roomEventEntity.getEventTimes());
 			if (eventDescs.contains("进入")) {
 				reviewCount++;
-//				System.out.println(">>>>>>>>>>>>>" + roomEventEntity.getRoomId());
+				// System.out.println(">>>>>>>>>>>>>" +
+				// roomEventEntity.getRoomId());
 				List<Object> reviewTime = reportReviewTimes(eventDescs, eventTimes);
 				reviewTimes.addAll(reviewTime);
 			}
@@ -309,13 +314,13 @@ public class MongoTest {
 		for (int i = 0; i < reviewTimes.size(); i++) {
 			sb.append(reviewTimes.get(i) + ";");
 		}
-//		System.out.println(sb.toString());
-//		System.out.println(JSON.toJSONString(result, true));
+		// System.out.println(sb.toString());
+		// System.out.println(JSON.toJSONString(result, true));
 		return result;
 	}
-	
+
 	@Test
-	public void test(){
+	public void test() {
 		MongoDBManager mongoDBManager = new MongoDBManager("admin", "RtcEvent");
 		Condition cond = Condition.init();
 		Condition cond2 = Condition.init();
@@ -327,5 +332,37 @@ public class MongoTest {
 		for (RtcEventDetail rtcEventDetail : rtcEventDetails) {
 			System.out.println(rtcEventDetail.getUserName());
 		}
+	}
+
+	// 老师回顾情况统计
+	@Test
+	public void saveUserRoomEvent() throws Exception {
+		MongoDBManager mongoDBManager = new MongoDBManager("admin", "RoomEvent");
+		BasicDBObject condition = new BasicDBObject();// 条件
+		condition.append("roomId", "144501");
+		BasicDBObject key = new BasicDBObject("userId", 1);// 指定需要显示列
+		key.append("roomId", 1);
+		key.append("insertTime", 1);
+		key.append("event", 1);
+		key.append("userType", 1);
+		key.append("_id", 0);
+		Collection<JSONObject> roomEventDetails = mongoDBManager.find(condition, key, JSONObject.class);
+		if (roomEventDetails.isEmpty()) {
+			Log.info("lesson_plan_id:" + "在mongodb中无RoomEvent信息！");
+			return;
+		}
+		List<Object[]> insertlist = new ArrayList<Object[]>();
+		for (JSONObject jsonObject : roomEventDetails) {
+			Integer roomId = Integer.parseInt(jsonObject.getString("roomId"));
+			Integer userId = Integer.parseInt(jsonObject.getString("userId"));
+			Integer userType = Integer.parseInt(jsonObject.getString("userType"));
+			Date insertTime = new Date(jsonObject.getLong("insertTime"));
+			String event = jsonObject.getString("event");
+			insertlist.add(new Object[] { roomId, userId, userType, insertTime, event });
+
+		}
+		DB db = DB.getDB();
+		db.batchUpdate("insert into analysis_user_room_event(lesson_plan_id,user_id,user_type,insert_time,event) values(?,?,?,?,?)", insertlist);
+
 	}
 }

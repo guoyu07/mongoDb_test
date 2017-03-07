@@ -1,15 +1,12 @@
 package com.hfjy.mongoTest.mongodb;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
-import org.apache.log4j.Logger;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
@@ -39,19 +36,19 @@ import com.mongodb.client.model.Filters;
  *
  */
 public class MongoDBManager {
-	
-	//private static final Logger Log = Logger.getLogger(MongoDBManager.class);
-	
-	private  DBCollection dbCollection;
-	
-	private  MongoCollection<Document> mongoColl;
-	
-	public MongoDBManager(String dbName,String collName) {
-		dbCollection =MongoDBServer.getDBCollection(dbName, collName);
-		mongoColl =MongoDBServer.getMongoCollection(dbName, collName);
+
+	// private static final Logger Log = Logger.getLogger(MongoDBManager.class);
+
+	private DBCollection dbCollection;
+
+	private MongoCollection<Document> mongoColl;
+
+	public MongoDBManager(String dbName, String collName) {
+		dbCollection = MongoDBServer.getDBCollection(dbName, collName);
+		mongoColl = MongoDBServer.getMongoCollection(dbName, collName);
 	}
-	
-	public MongoCollection<Document> getMongoColl(){
+
+	public MongoCollection<Document> getMongoColl() {
 		return mongoColl;
 	}
 
@@ -94,9 +91,33 @@ public class MongoDBManager {
 				}
 			}
 		} catch (Exception e) {
-			Log.error(e,e.getMessage());
+			Log.error(e, e.getMessage());
 		}
 		return false;
+	}
+
+	// 根据条件获取指定字段
+	public <T> Collection<T> find(BasicDBObject condition, BasicDBObject key, Class<T> cls) {
+		ArrayList<T> resultList = new ArrayList<T>();
+		DBCursor cursor = null;
+		try {
+			cursor = dbCollection.find(condition, key);
+			if (cursor == null) {
+				return null;
+			}
+			while (cursor.hasNext()) {
+				resultList.add(JSONObject.parseObject(cursor.next().toString(), cls));
+			}
+			return resultList;
+		} catch (Exception e) {
+			throw new RuntimeException(e.getMessage());
+		} finally {
+			if (null != cursor) {
+				cursor.close();
+			}
+			MongoDBServer.poolClose();
+		}
+
 	}
 
 	/**
@@ -110,7 +131,7 @@ public class MongoDBManager {
 	 * @param num
 	 * @return
 	 */
-	public  ArrayList<DBObject> find(String[] keys, Object[] values, int num) {
+	public ArrayList<DBObject> find(String[] keys, Object[] values, int num) {
 		ArrayList<DBObject> resultList = new ArrayList<DBObject>();
 		DBCursor cursor = null;
 		try {
@@ -169,8 +190,7 @@ public class MongoDBManager {
 	 * @param values
 	 * @return
 	 */
-	public boolean inSert(String dbName, String collectionName,
-			String[] keys, Object[] values) {
+	public boolean inSert(String dbName, String collectionName, String[] keys, Object[] values) {
 		WriteResult result = null;
 		try {
 			if (keys != null && values != null) {
@@ -221,7 +241,7 @@ public class MongoDBManager {
 			} catch (Exception e) {
 				e.printStackTrace();
 				throw new RuntimeException(e.getMessage());
-			} 
+			}
 		}
 		return false;
 	}
@@ -235,8 +255,7 @@ public class MongoDBManager {
 	 * @param newValue
 	 * @return
 	 */
-	public  boolean update(
-			DBObject oldValue, DBObject newValue) {
+	public boolean update(DBObject oldValue, DBObject newValue) {
 		WriteResult result = null;
 		if (oldValue.equals(newValue)) {
 			return true;
@@ -269,33 +288,26 @@ public class MongoDBManager {
 	public <T> Collection<T> group(Map<String, Object> params, String reduceFun, Class<T> cls) {
 
 		try {
-	
+
 			// 校验
-			if (params == null || params.get("key") == null
-					|| params.get("initial") == null
-					|| params.get("cond") == null) {
+			if (params == null || params.get("key") == null || params.get("initial") == null || params.get("cond") == null) {
 				throw new Exception("参数不够，key,initial,cond 都必填");
 			}
 			// 执行分组查询
-			DBObject dbObj = dbCollection.group(
-					createDBObject(params.get("key"), true),
-					createDBObject(params.get("cond"), false),
-					createDBObject(params.get("initial"), false), reduceFun);
+			DBObject dbObj = dbCollection.group(createDBObject(params.get("key"), true), createDBObject(params.get("cond"), false), createDBObject(params.get("initial"), false), reduceFun);
 			if (dbObj != null) {
 				Collection<T> colls = new ArrayList<T>();
 				if (dbObj instanceof BasicDBList) {
-					Iterator<Object> iterator = ((BasicDBList) dbObj)
-							.iterator();
+					Iterator<Object> iterator = ((BasicDBList) dbObj).iterator();
 					while (iterator.hasNext()) {
-						colls.add(JSONObject.parseObject(iterator.next()
-								.toString(), cls));
+						colls.add(JSONObject.parseObject(iterator.next().toString(), cls));
 					}
 				}
 				return colls;
 			}
 		} catch (Exception e) {
 			throw new RuntimeException(e.getMessage());
-		} 
+		}
 		return null;
 	}
 
@@ -314,19 +326,16 @@ public class MongoDBManager {
 			}
 		} else if (object instanceof Map) {
 			if (((Map<String, Object>) object).size() == 1) {
-				for (Map.Entry<String, Object> entry : ((Map<String, Object>) object)
-						.entrySet()) {
+				for (Map.Entry<String, Object> entry : ((Map<String, Object>) object).entrySet()) {
 					if (entry.getValue() instanceof Map) {
-						obj.append(entry.getKey(),
-								createDBObject(entry.getValue(), false));
+						obj.append(entry.getKey(), createDBObject(entry.getValue(), false));
 					} else {
 						obj.append(entry.getKey(), entry.getValue());
 					}
 				}
 			} else {
 				// 塞进去的值
-				for (Map.Entry<String, Object> entry : ((Map<String, Object>) object)
-						.entrySet()) {
+				for (Map.Entry<String, Object> entry : ((Map<String, Object>) object).entrySet()) {
 					obj.append(entry.getKey(), entry.getValue());
 				}
 			}
@@ -343,12 +352,12 @@ public class MongoDBManager {
 	 * @param cls
 	 * @return
 	 */
-	public <T> boolean insert( T t) {
+	public <T> boolean insert(T t) {
 		try {
 			mongoColl.insertOne(Document.parse(JSON.toJSONString(t)));
 		} catch (Exception e) {
 			Log.error(e.getMessage(), e);
-		} 
+		}
 		return true;
 	}
 
@@ -361,41 +370,41 @@ public class MongoDBManager {
 	 * @param cls
 	 * @return
 	 */
-	public  <T> Collection<T> find(Condition condition, Class<T> cls) {
+	public <T> Collection<T> find(Condition condition, Class<T> cls) {
 		try {
 			Collection<T> t = new LinkedList<T>();
 			Bson[] bons = createCondition(condition);
 			FindIterable<Document> doc = mongoColl.find(Filters.and(bons)).sort(new BasicDBObject("insertTime", -1));
 			MongoCursor<Document> cursor = doc.iterator();
 			while (cursor.hasNext()) {
-				T bean= cls.newInstance();
-				//泛型实例化
-				t.add((T)BeanConverterUtils.document2Bean(cursor.next(), bean));
+				T bean = cls.newInstance();
+				// 泛型实例化
+				t.add((T) BeanConverterUtils.document2Bean(cursor.next(), bean));
 			}
 			return t;
 		} catch (Exception e) {
 			Log.error(e.getMessage(), e);
 		}
 		return null;
-	} 
-	
+	}
+
 	@SuppressWarnings("all")
-	public <T> Collection<T> distinctQuery(String distinctName,Map<String, Object> condition,Class<T> cls){
+	public <T> Collection<T> distinctQuery(String distinctName, Map<String, Object> condition, Class<T> cls) {
 		try {
 			if (StringUtils.isEmpty(distinctName)) {
 				throw new Exception(" distinctName 不能为空！");
 			}
 			Collection<T> t = new LinkedList<T>();
 			List list = new ArrayList<>();
-			if (condition!=null&&!condition.isEmpty()) {
+			if (condition != null && !condition.isEmpty()) {
 				list = dbCollection.distinct(distinctName, new BasicDBObject(condition));
-			}else {
+			} else {
 				list = dbCollection.distinct(distinctName);
 			}
 			Iterator iterator = list.iterator();
-			while(iterator.hasNext()){
-				T bean= cls.newInstance();
-				t.add((T)iterator.next());
+			while (iterator.hasNext()) {
+				T bean = cls.newInstance();
+				t.add((T) iterator.next());
 			}
 			return t;
 		} catch (Exception e) {
@@ -412,32 +421,32 @@ public class MongoDBManager {
 	 * @param condition
 	 * @return
 	 */
-	public  long size(String dbName, String collectionName,
-			Condition condition) {
+	public long size(String dbName, String collectionName, Condition condition) {
 		// 获取对应的类型
 		try {
 			return mongoColl.count(Filters.and(createCondition(condition)));
 		} catch (Exception e) {
 			Log.error(e.getMessage(), e);
-		} 
+		}
 		return 0;
 	}
 
 	/**
 	 * 根据条件查询第一条
+	 * 
 	 * @param condtion
 	 * @param cls
 	 * @return
 	 */
 
-	public  <T> T findOne(Condition condtion, Class<T> cls) {
+	public <T> T findOne(Condition condtion, Class<T> cls) {
 		try {
 
 			// 拼接查询条件
 			Bson[] bons = createCondition(condtion);
 			Document doc = mongoColl.find(Filters.and(bons)).first();
 			if (doc != null) {
-				T bean= cls.newInstance();
+				T bean = cls.newInstance();
 				return BeanConverterUtils.document2Bean(doc, bean);
 			}
 		} catch (Exception e) {
@@ -454,19 +463,16 @@ public class MongoDBManager {
 	 * @param cls
 	 * @return 得到的bean 实体 只有两个属性 id 和value
 	 */
-	public  <T> Collection<T> mapReduce(Map<String, Object> fun, Class<T> cls) {
+	public <T> Collection<T> mapReduce(Map<String, Object> fun, Class<T> cls) {
 		try {
 			Collection<T> coll = new ArrayList<T>();
-			
+
 			if (fun.get("Map") == null || fun.get("Reduce") == null) {
 				return null;
 			}
-			if (fun.get("Map") instanceof String
-					&& fun.get("Reduce") instanceof String) {
+			if (fun.get("Map") instanceof String && fun.get("Reduce") instanceof String) {
 				// mapReduce
-				MapReduceIterable<Document> ite = mongoColl
-						.mapReduce(fun.get("Map").toString(), fun.get("Reduce")
-								.toString());
+				MapReduceIterable<Document> ite = mongoColl.mapReduce(fun.get("Map").toString(), fun.get("Reduce").toString());
 
 				MongoCursor<Document> cursor = ite.iterator();
 				while (cursor.hasNext()) {
@@ -502,7 +508,7 @@ public class MongoDBManager {
 			} else {
 				docs[i] = getType(c);
 			}
-		} 
+		}
 		return docs;
 	}
 
@@ -541,6 +547,5 @@ public class MongoDBManager {
 		}
 		return bson;
 	}
-	
-	
+
 }

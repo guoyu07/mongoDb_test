@@ -16,20 +16,21 @@ public interface MongoDBService {
 	 * @return
 	 * @throws Exception
 	 */
-	List<RtcEventDetail> queryRtcEventDetail(Map<String,Object> condition,String collectionName) throws Exception;
-	
+	List<RtcEventDetail> queryRtcEventDetail(Map<String, Object> condition, String collectionName) throws Exception;
+
 	/**
 	 * TODO(查询RoomEvent详情信息)
-	 * @author: no_relax 
+	 * 
+	 * @author: no_relax
 	 * @Title: queryRoomEventDetail
 	 * @param condition
 	 * @param collectionName
 	 * @return List<RoomEventDetail>
-	 * @throws Exception 
+	 * @throws Exception
 	 * @since Vphone1.3.0
-	*/
-	List<RoomEventDetail> queryRoomEventDetail(Map<String,Object> condition,String collectionName)throws Exception;
-	
+	 */
+	List<RoomEventDetail> queryRoomEventDetail(Map<String, Object> condition, String collectionName) throws Exception;
+
 	/**
 	 * 
 	 * @param condition
@@ -37,56 +38,68 @@ public interface MongoDBService {
 	 * @return
 	 * @throws Exception
 	 */
-	List<Object> groupByLessonCount(Map<String,Object> condition,String collectionName) throws Exception;
+	List<Object> groupByLessonCount(Map<String, Object> condition, String collectionName) throws Exception;
+
 	/**
 	 * 根据RoomId 查询 数据
-	 * @param condition：需要查询使用的 roomId 和 status
-	 * @param collectionName 表名
+	 * 
+	 * @param condition：需要查询使用的
+	 *            roomId 和 status
+	 * @param collectionName
+	 *            表名
 	 * @return
 	 * @throws Exception
 	 */
-	List<RoomEventEntity> groupRoomEvent(Map<String,Object> condition,String collectionName)throws Exception;
+	List<RoomEventEntity> groupRoomEvent(Map<String, Object> condition, String collectionName) throws Exception;
+
 	/**
 	 * 根据RoomId查询数据
+	 * 
 	 * @param condition
 	 * @param collectionName
 	 * @return
 	 * @throws Exception
 	 */
-	List<RtcEventEntity> queryRtcEvent(Map<String,Object> condition,String collectionName)throws Exception;
+	List<RtcEventEntity> queryRtcEvent(Map<String, Object> condition, String collectionName) throws Exception;
+
 	/**
 	 * TODO(去重查询roomId集合)
-	 * @author: no_relax 
+	 * 
+	 * @author: no_relax
 	 * @Title: distinctQueryRoomId
 	 * @param condition
 	 * @param collectionName
 	 * @return List<String>
-	 * @throws Exception 
+	 * @throws Exception
 	 * @since Vphone1.3.0
-	*/
-	List<String> distinctQueryRoomId(Map<String,Object> condition,String collectionName)throws Exception;
-	
+	 */
+	List<String> distinctQueryRoomId(Map<String, Object> condition, String collectionName) throws Exception;
+
 	/**
 	 * TODO(获取房间中所有的用户信息)
-	 * @author: no_relax 
+	 * 
+	 * @author: no_relax
 	 * @Title: findUsersInfoByRoomId
 	 * @param condition
 	 * @param collectionName
-	 * @return  RoomEventEntity
-	 * @throws Exception 
+	 * @return RoomEventEntity
+	 * @throws Exception
 	 * @since Vphone1.3.0
-	*/
-	RoomEventEntity findUsersInfoByRoomId(Map<String, Object> condition,String collectionName)throws Exception;
-	
+	 */
+	RoomEventEntity findUsersInfoByRoomId(Map<String, Object> condition, String collectionName) throws Exception;
+
 	/**
 	 * TODO(上课情况统计)
-	 * @author: no_relax 
+	 * 
+	 * @author: no_relax
 	 * @Title: studyConditionReport
 	 * @param condition
 	 * @param collectionName
 	 * @return RoomEventEntity
-	 * @throws Exception 
+	 * @throws Exception
 	 * @since Vphone1.3.0
-	*/
-	List<RoomEventEntity> studyConditionReport(Map<String, Object> condition,String status,String collectionName)throws Exception;
-} 
+	 */
+	List<RoomEventEntity> studyConditionReport(Map<String, Object> condition, String status, String collectionName) throws Exception;
+
+	void saveUserRoomEvent() throws Exception;
+}

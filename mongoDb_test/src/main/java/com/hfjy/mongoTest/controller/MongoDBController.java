@@ -209,6 +209,19 @@ public class MongoDBController {
 		return resMap;
 	}
 
+	@RequestMapping("saveUserRoomEvent")
+	@ResponseBody
+	public Object saveUserRoomEvent() {
+		Map<String, Object> resMap = new HashMap<>();
+		try {
+			mongoDBService.saveUserRoomEvent();
+			resMap.put("desc", "保存用户RoomEvent成功！");
+		} catch (Exception e) {
+			resMap.put("desc", "保存用户RoomEvent失败！" + e.getMessage());
+		}
+		return resMap;
+	}
+
 	private Map<String, Object> getStudyConditionReport() throws Exception {
 		HashMap<String, Object> condition = new HashMap<>();
 		int experienceLessons = 0;
