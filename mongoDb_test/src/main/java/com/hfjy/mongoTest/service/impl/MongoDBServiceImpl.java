@@ -473,13 +473,13 @@ public class MongoDBServiceImpl implements MongoDBService {
 	@Override
 	public void saveUserRoomEvent() throws Exception {
 		DB db = DB.getDB();
-		List<JSONObject> lessonPlanIds = db.query("SELECT l.lesson_plan_id lessonPlanId FROM lesson_plan l WHERE l.plan_end_time BETWEEN DATE_SUB(now(), INTERVAL 1 DAY) AND now() and l.status=3 ");
+		List<Integer> lessonPlanIds = db.query(Integer.class,
+				"SELECT l.lesson_plan_id lessonPlanId FROM lesson_plan l WHERE l.plan_end_time BETWEEN DATE_SUB(now(), INTERVAL 1 DAY) AND now() and l.status=3 ");
 		try {
-			for (JSONObject lessonPlanIdObj : lessonPlanIds) {
-				String lessonPlanId = lessonPlanIdObj.getString("lessonPlanId");
+			for (Integer lessonPlanId : lessonPlanIds) {
 				MongoDBManager mongoDBManager = new MongoDBManager("admin", "RoomEvent");
 				BasicDBObject condition = new BasicDBObject();// 条件
-				condition.append("roomId", lessonPlanId);
+				condition.append("roomId", lessonPlanId + "");
 				BasicDBObject key = new BasicDBObject("userId", 1);// 指定需要显示列
 				key.append("roomId", 1);
 				key.append("insertTime", 1);
