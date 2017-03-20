@@ -102,4 +102,6 @@ public interface MongoDBService {
 	List<RoomEventEntity> studyConditionReport(Map<String, Object> condition, String status, String collectionName) throws Exception;
 
 	void saveUserRoomEvent() throws Exception;
+
+	String exportReport(String startTime, String endTime) throws Exception;
 }

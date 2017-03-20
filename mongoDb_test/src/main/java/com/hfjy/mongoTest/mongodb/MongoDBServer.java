@@ -5,14 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-
-
-
-
 import org.apache.log4j.Logger;
 import org.bson.Document;
 
-import com.hfjy.base.core.Log;
 import com.hfjy.mongoTest.utils.Config;
 import com.hfjy.mongoTest.utils.HttpUtils;
 import com.hfjy.mongoTest.utils.StringUtils;
@@ -28,9 +23,9 @@ import com.mongodb.client.MongoDatabase;
 
 public class MongoDBServer {
 	private static String prefix = "MONGODB_";
-	
-	//private static final Logger Log = Logger.getLogger(MongoDBManager.class);
-	
+
+	private static final Logger Log = Logger.getLogger(MongoDBManager.class);
+
 	private static MongoClient mongoClient = null;
 	// 类初始化时，自行实例化，饿汉式单例模式
 	// 从配置文件中获取属性值
@@ -40,13 +35,12 @@ public class MongoDBServer {
 	private static String pwds = Config.get(prefix + "PASSWORD", "HV2FnMpy3g").trim();
 	private static String dataBases = Config.get(prefix + "DATABASE", "admin").trim();
 	private static String replSetName = Config.get(prefix + "REPL_SET_NAME", "").trim();
-	
-	
+
 	private static final Map<String, MongoDatabase> mongoDatabase = new ConcurrentHashMap<>();
 
 	private static final Map<String, MongoCollection<Document>> mongoCollectionMap = new ConcurrentHashMap<>();
-	
-	static{
+
+	static {
 		if (mongoClient == null) {
 			MongoClientOptions.Builder build = new MongoClientOptions.Builder();
 			// 与目标数据库能够建立的最大connection数量为50
@@ -64,7 +58,7 @@ public class MongoDBServer {
 			build.socketTimeout(1000 * 60 * 1);
 			// 线程队列数，如果连接线程排满了队列就会抛出“Out of semaphores to get db”错误。
 			build.threadsAllowedToBlockForConnectionMultiplier(5000);
-			if(StringUtils.isNotEmpty(replSetName)){
+			if (StringUtils.isNotEmpty(replSetName)) {
 				build.requiredReplicaSetName(replSetName);
 				build.connectionsPerHost(1);
 			}
@@ -82,55 +76,56 @@ public class MongoDBServer {
 				}
 				// ping 端口 是否可以通
 				if (!HttpUtils.ping(hostArr[i], Integer.parseInt(portArr[i]))) {
-					throw new MongoException(hostArr[i] + ":"
-							+ Integer.parseInt(portArr[i]) + "地址没法通信!");
+					throw new MongoException(hostArr[i] + ":" + Integer.parseInt(portArr[i]) + "地址没法通信!");
 				}
-				addressList.add(new ServerAddress(hostArr[i], Integer
-						.parseInt(portArr[i])));
+				addressList.add(new ServerAddress(hostArr[i], Integer.parseInt(portArr[i])));
 			}
 
 			String[] userNameArr = userNames.split(";");
 			String[] pwdArr = pwds.split(";");
 			String[] dbArr = dataBases.split(";");
 			for (int i = 0; i < userNameArr.length; i++) {
-				if (StringUtils.isEmpty(pwdArr[i])
-						|| StringUtils.isEmpty(dbArr[i])) {
+				if (StringUtils.isEmpty(pwdArr[i]) || StringUtils.isEmpty(dbArr[i])) {
 					break;
 				}
-				credentials.add(MongoCredential.createScramSha1Credential(
-						userNameArr[i], dbArr[i], pwdArr[i].toCharArray()));
+				credentials.add(MongoCredential.createScramSha1Credential(userNameArr[i], dbArr[i], pwdArr[i].toCharArray()));
 			}
 			try {
 				// 数据库连接实例
-				mongoClient = new MongoClient(addressList, credentials,
-						myOptions);
+				mongoClient = new MongoClient(addressList, credentials, myOptions);
 			} catch (MongoException e) {
 				throw new RuntimeException(e.getMessage());
 			}
 		}
-	} 
+	}
+
 	public static MongoClient getMongoClient() {
 		return mongoClient;
 	}
+
 	/**
 	 * 获取db
+	 * 
 	 * @param dbName
 	 * @return
 	 */
 	@SuppressWarnings("deprecation")
-	public static DB getDB(String dbName){
+	public static DB getDB(String dbName) {
 		return mongoClient.getDB(dbName);
 	}
+
 	/**
 	 * 获取dbCollection
+	 * 
 	 * @param dbName
 	 * @param collectionName
 	 * @return
 	 */
-	public static DBCollection getDBCollection(String dbName, String collectionName){
+	public static DBCollection getDBCollection(String dbName, String collectionName) {
 		DB db = getDB(dbName);
 		return db.getCollection(collectionName);
 	}
+
 	/**
 	 * 获取数据库
 	 * 
@@ -139,15 +134,15 @@ public class MongoDBServer {
 	 */
 	public static MongoDatabase getMongoDatabase(String dbName) {
 		// map中找 是否存在
-		MongoDatabase md =null;
+		MongoDatabase md = null;
 		try {
-			md =mongoDatabase.get(dbName);
+			md = mongoDatabase.get(dbName);
 			if (md == null) {
 				md = getMongoClient().getDatabase(dbName);
 				mongoDatabase.put(dbName, md);
 			}
 		} catch (Exception e) {
-			Log.error(e,e.getMessage());
+			Log.error(e.getMessage(), e);
 		}
 		return md;
 	}
@@ -159,22 +154,22 @@ public class MongoDBServer {
 	 * @param collectionName
 	 * @return
 	 */
-	public static <T> MongoCollection<Document> getMongoCollection(
-			String dbName, String collectionName) {
+	public static <T> MongoCollection<Document> getMongoCollection(String dbName, String collectionName) {
 		// map中找 是否存在
 		MongoCollection<Document> mc = mongoCollectionMap.get(collectionName);
 		if (mc == null) {
 			mc = getMongoDatabase(dbName).getCollection(collectionName);
 			mongoCollectionMap.put(collectionName, mc);
 		}
-	
+
 		return mc;
 	}
+
 	/**
 	 * 关闭资源
 	 */
-	public static void poolClose(){
-		if(mongoClient !=null){
+	public static void poolClose() {
+		if (mongoClient != null) {
 			getMongoClient().close();
 		}
 	}

@@ -180,6 +180,13 @@
 			<artifactId>service.xue.message</artifactId>
 			<version>1.0.1-SNAPSHOT</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>com.thinkgem.jeesite</groupId>
+			<artifactId>exportExcel</artifactId>
+			<version>1.0</version>
+		</dependency>
+		
 	</dependencies>
 	<build>
 		<plugins>

@@ -20,10 +20,10 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
-import com.hfjy.base.core.Log;
 import com.hfjy.base.core.io.DB;
 import com.hfjy.mongoTest.bean.Condition;
 import com.hfjy.mongoTest.bean.DateType;
+import com.hfjy.mongoTest.entity.AnalysisUserInfo;
 import com.hfjy.mongoTest.entity.RoomEventDetail;
 import com.hfjy.mongoTest.entity.RoomEventEntity;
 import com.hfjy.mongoTest.entity.RtcEventDetail;
@@ -32,6 +32,7 @@ import com.hfjy.mongoTest.mongodb.MongoDBManager;
 import com.hfjy.mongoTest.mongodb.MongoDBServer;
 import com.hfjy.mongoTest.service.MongoDBService;
 import com.hfjy.mongoTest.utils.DateUtils;
+import com.hfjy.mongoTest.utils.FileUtils;
 import com.hfjy.mongoTest.utils.StringUtils;
 import com.mongodb.BasicDBObject;
 
@@ -190,7 +191,7 @@ public class MongoDBServiceImpl implements MongoDBService {
 							roomEventEntity.setStudentName(tempRoomEventEntity.getStudentName());
 							roomEventEntity.setTeacherId(tempRoomEventEntity.getTeacherId());
 							roomEventEntity.setTeacherName(tempRoomEventEntity.getTeacherName());
-							Log.debug(String.format("roomId:%1$s>>>>>openCount:%2$s>>>>cancelCount:%3$s>>>>channelSwitch:%4$s", rtcEventEntity.getRoomId(), rtcEventEntity.getOpenCount(),
+							log.debug(String.format("roomId:%1$s>>>>>openCount:%2$s>>>>cancelCount:%3$s>>>>channelSwitch:%4$s", rtcEventEntity.getRoomId(), rtcEventEntity.getOpenCount(),
 									rtcEventEntity.getCancelCount(), rtcEventEntity.getChannelSwitch().length));
 							break;
 						}
@@ -455,7 +456,9 @@ public class MongoDBServiceImpl implements MongoDBService {
 			sb.append("function(doc,prev){ prev.courseName=doc.courseName; if(doc.userType=='1'){prev.teacherName=doc.userName;}else if(doc.userType=='0'){prev.studentName=doc.userName; }  ");
 			sb.append("if(doc.status=='3'&&doc.userType=='0'){prev.eventDescs.push(doc.event);prev.eventTimes.push(doc.insertTime);}}  ");
 			Map<String, Object> dates = new HashMap<String, Object>();
-			String formatDate = DateUtils.formatDate(DateUtils.nextDate(new Date(), DateType.DAY, -1), "yyyy-MM-dd");
+			// String formatDate = DateUtils.formatDate(DateUtils.nextDate(new
+			// Date(), DateType.DAY, -1), "yyyy-MM-dd");
+			String formatDate = "2017-03-14";
 			Date startDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(formatDate + " 00:00:00");
 			Date endDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(formatDate + " 23:59:59");
 			dates.put("$gte", startDate.getTime());
@@ -508,6 +511,30 @@ public class MongoDBServiceImpl implements MongoDBService {
 			MongoDBServer.poolClose();
 		}
 
+	}
+
+	@Override
+	public String exportReport(String startTime, String endTime) throws Exception {
+		Condition condition = null;
+		String filePath = "";
+		condition = Condition.init();
+		Date lastDay = DateUtils.nextDate(DateUtils.getDay(), DateType.DAY, -1);
+		String lastDayStr = DateUtils.formatDate(lastDay, "yyyy-MM-dd");
+		Date lastWeekDay = DateUtils.nextDate(DateUtils.getDay(), DateType.DAY, -7);
+		String lastWeekDayStr = DateUtils.formatDate(lastWeekDay, "yyyy-MM-dd");
+		// condition.gte("userId", "0");
+		MongoDBManager mongoDBManager = new MongoDBManager("admin", "AnalysisUserInfo");
+		AnalysisUserInfo analysisUserInfo = new AnalysisUserInfo();
+		condition.notIs("action", "");
+		condition.notIs("action", null);
+		startTime = StringUtils.isEmpty(startTime) ? lastWeekDayStr + " 00:00:00.000" : startTime;
+		endTime = StringUtils.isEmpty(endTime) ? lastDayStr + " 00:00:00.000" : endTime;
+		condition.gte("actionTime", startTime);
+		condition.lte("actionTime", endTime);
+		Collection<AnalysisUserInfo> analysisUserInfos = mongoDBManager.find(condition, AnalysisUserInfo.class);
+		filePath = "G:/海风教育工作/BI统计/统计上课情况/" + lastWeekDayStr + "-" + lastDayStr + ".xlsx";
+		FileUtils.exportToExcel(filePath, "BI学习中心用户统计", analysisUserInfos, analysisUserInfo);
+		return filePath;
 	}
 
 }

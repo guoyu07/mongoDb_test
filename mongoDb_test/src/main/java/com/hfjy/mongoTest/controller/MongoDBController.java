@@ -1,5 +1,8 @@
 package com.hfjy.mongoTest.controller;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -7,6 +10,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.hfjy.base.core.Log;
 import com.hfjy.mongoTest.entity.RoomEventDetail;
 import com.hfjy.mongoTest.entity.RoomEventEntity;
 import com.hfjy.mongoTest.entity.RtcEventDetail;
@@ -35,8 +42,7 @@ import com.hfjy.service.xue.mail.SendCloudService;
 public class MongoDBController {
 	@Autowired
 	private MongoDBService mongoDBService;
-	// private static final Logger log =
-	// Logger.getLogger(MongoDBController.class);
+	private static final Logger log = Logger.getLogger(MongoDBController.class);
 
 	/**
 	 * 查询维度，根据roomId查询房间具体日志信息
@@ -61,7 +67,7 @@ public class MongoDBController {
 			model.addAttribute("roomEvents", roomEvents);
 		} catch (Exception e) {
 			e.printStackTrace();
-			Log.warn(e, e.getMessage());
+			log.warn(e.getMessage(), e);
 		}
 		return "modules/bi/detailInfoLogs";
 	}
@@ -88,7 +94,7 @@ public class MongoDBController {
 		try {
 			data = mongoDBService.groupByLessonCount(coMap, "lessonCountLog");
 		} catch (Exception e) {
-			Log.warn(e, e.getMessage());
+			log.warn(e.getMessage(), e);
 			e.getMessage();
 		}
 		return data;
@@ -135,7 +141,7 @@ public class MongoDBController {
 			model.addAttribute("roomEvents", data);
 		} catch (Exception e) {
 			e.printStackTrace();
-			Log.warn(e, e.getMessage());
+			log.warn(e.getMessage(), e);
 		}
 		return "modules/bi/bi";
 	}
@@ -169,7 +175,7 @@ public class MongoDBController {
 				dataMap.put("code", 0);
 			}
 		} catch (Exception e) {
-			Log.warn(e, e.getMessage());
+			log.warn(e.getMessage(), e);
 			e.printStackTrace();
 		}
 		return dataMap;
@@ -219,6 +225,56 @@ public class MongoDBController {
 		} catch (Exception e) {
 			resMap.put("desc", "保存用户RoomEvent失败！" + e.getMessage());
 		}
+		return resMap;
+	}
+
+	@RequestMapping("reportExport")
+	@ResponseBody
+	public Object reportExport(String startTime, String endTime, HttpServletRequest request, HttpServletResponse response) throws Exception {
+		String filePath = "";
+		ServletOutputStream out = null;
+		FileInputStream in = null;
+		Map<String, Object> resMap = new HashMap<>();
+		try {
+			filePath = mongoDBService.exportReport(startTime, endTime);
+			// filePath =
+			// "G:/海风教育工作/BI统计/统计上课情况/(2017-03-06-2017-03-12)用户登录注册数据汇总.xlsx";
+			File file = new File(filePath);
+			String filename = file.getName();
+			// 解决乱码问题
+			URLEncoder.encode(filename, "utf-8");
+			// 重置输出流
+			response.reset();
+			// 设置文件名
+			response.addHeader("Content-Disposition", "attachment;filename=" + filename);
+			// 设置文件类型
+			response.setContentType("application/x-excel");
+			response.setHeader("Content-Length", String.valueOf(file.length()));
+			in = new FileInputStream(file);// 输入流
+			out = response.getOutputStream();// 输出流
+			byte[] byteBuffer = new byte[1024];
+			int lenth = 0;
+			while ((lenth = in.read(byteBuffer, 0, byteBuffer.length)) != -1) {
+				out.write(byteBuffer, 0, lenth);
+			}
+			out.flush();
+			out.close();
+			in.close();
+
+		} catch (Exception e) {
+			log.warn(e.getMessage(), e);
+			resMap.put("code", "500");
+			resMap.put("message", "文件下载失败！");
+		} finally {
+			if (out != null) {
+				out.close();
+			}
+			if (in != null) {
+				in.close();
+			}
+		}
+		resMap.put("code", "200");
+		resMap.put("message", "文件下载成功！");
 		return resMap;
 	}
 
