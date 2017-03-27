@@ -1,5 +1,6 @@
 package com.hfjy.mongoTest.service.impl;
 
+import java.io.File;
 import java.math.RoundingMode;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -20,6 +21,7 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
+import com.hfjy.base.core.Config;
 import com.hfjy.base.core.io.DB;
 import com.hfjy.mongoTest.bean.Condition;
 import com.hfjy.mongoTest.bean.DateType;
@@ -38,6 +40,7 @@ import com.mongodb.BasicDBObject;
 
 @Service(value = "MongoDBService")
 public class MongoDBServiceImpl implements MongoDBService {
+	private static final String exportLoginExcelPath = Config.get("EXPORT_LOGIN_EXCEL_PATH", "C:/Users/wusong/Desktop/mongodb_download/");// 放在Linux目录/mongodb_download/
 	/**
 	 * 默认数据库
 	 */
@@ -427,7 +430,7 @@ public class MongoDBServiceImpl implements MongoDBService {
 	}
 
 	@Override
-	public List<RoomEventEntity> studyConditionReport(Map<String, Object> condition, String status, String collectionName) throws Exception {
+	public List<RoomEventEntity> studyConditionReport(Map<String, Object> condition, String status, String date, String collectionName) throws Exception {
 		// 校验
 		if (StringUtils.isEmpty(collectionName)) {
 			throw new Exception("没有表信息");
@@ -456,9 +459,9 @@ public class MongoDBServiceImpl implements MongoDBService {
 			sb.append("function(doc,prev){ prev.courseName=doc.courseName; if(doc.userType=='1'){prev.teacherName=doc.userName;}else if(doc.userType=='0'){prev.studentName=doc.userName; }  ");
 			sb.append("if(doc.status=='3'&&doc.userType=='0'){prev.eventDescs.push(doc.event);prev.eventTimes.push(doc.insertTime);}}  ");
 			Map<String, Object> dates = new HashMap<String, Object>();
-			// String formatDate = DateUtils.formatDate(DateUtils.nextDate(new
-			// Date(), DateType.DAY, -1), "yyyy-MM-dd");
-			String formatDate = "2017-03-14";
+			String formatDate = DateUtils.formatDate(DateUtils.nextDate(new Date(), DateType.DAY, -1), "yyyy-MM-dd");
+			formatDate = StringUtils.isEmpty(date) ? formatDate : date;
+			// String formatDate = "2017-03-14";
 			Date startDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(formatDate + " 00:00:00");
 			Date endDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(formatDate + " 23:59:59");
 			dates.put("$gte", startDate.getTime());
@@ -532,7 +535,11 @@ public class MongoDBServiceImpl implements MongoDBService {
 		condition.gte("actionTime", startTime);
 		condition.lte("actionTime", endTime);
 		Collection<AnalysisUserInfo> analysisUserInfos = mongoDBManager.find(condition, AnalysisUserInfo.class);
-		filePath = "G:/海风教育工作/BI统计/统计上课情况/" + lastWeekDayStr + "-" + lastDayStr + ".xlsx";
+		File file = new File(exportLoginExcelPath);
+		if (!file.exists()) {
+			file.mkdir();
+		}
+		filePath = file.getPath() + File.separator + lastWeekDayStr + "-" + lastDayStr + ".xlsx";
 		FileUtils.exportToExcel(filePath, "BI学习中心用户统计", analysisUserInfos, analysisUserInfo);
 		return filePath;
 	}

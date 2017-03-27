@@ -99,7 +99,7 @@ public interface MongoDBService {
 	 * @throws Exception
 	 * @since Vphone1.3.0
 	 */
-	List<RoomEventEntity> studyConditionReport(Map<String, Object> condition, String status, String collectionName) throws Exception;
+	List<RoomEventEntity> studyConditionReport(Map<String, Object> condition, String status, String date, String collectionName) throws Exception;
 
 	void saveUserRoomEvent() throws Exception;
 

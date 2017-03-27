@@ -30,6 +30,7 @@ package com.hfjy.mongoTest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,12 +45,14 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.hfjy.mongoTest.bean.Condition;
+import com.hfjy.mongoTest.bean.DateType;
 import com.hfjy.mongoTest.entity.RoomEventDetail;
 import com.hfjy.mongoTest.entity.RoomEventEntity;
 import com.hfjy.mongoTest.entity.RtcEventDetail;
 import com.hfjy.mongoTest.entity.RtcEventEntity;
 import com.hfjy.mongoTest.mongodb.MongoDBManager;
 import com.hfjy.mongoTest.service.MongoDBService;
+import com.hfjy.mongoTest.utils.DateUtils;
 import com.hfjy.mongoTest.utils.StringUtils;
 import com.hfjy.service.xue.mail.SendCloudService;
 
@@ -199,14 +202,14 @@ public class MongoTest {
 		return reviewTimes;
 	}
 
-	@Test
-	public void sendMailReport() throws Exception {
-		Map<String, Object> studyConditionReport = getStudyConditionReport();
+	public void sendMailReport(String date) throws Exception {
+		Map<String, Object> studyConditionReport = getStudyConditionReport(date);
 		System.out.println(JSONObject.toJSONString(studyConditionReport, true));
 		// 准备邮件格式
 		StringBuffer sb = new StringBuffer();
 		sb.append("<table border=\"1\" >");
 		sb.append("<tr>");
+		sb.append("<td>时间</td>");
 		sb.append("<td>体验课</td>");
 		sb.append("<td>诊断课</td>");
 		sb.append("<td>正式课</td>");
@@ -217,6 +220,7 @@ public class MongoTest {
 		sb.append("<td>回顾上课时间</td>");
 		sb.append("</tr>");
 		sb.append("<tr>");
+		sb.append("<td>" + date + "</td>");
 		sb.append("<td>" + studyConditionReport.get("experienceLessons") + "</td>");
 		sb.append("<td>" + studyConditionReport.get("diagnosisLessons") + "</td>");
 		sb.append("<td>" + studyConditionReport.get("paidLessons") + "</td>");
@@ -231,7 +235,7 @@ public class MongoTest {
 		System.out.println(SendCloudService.sendStudyConditionReport(sb.toString()));
 	}
 
-	private Map<String, Object> getStudyConditionReport() throws Exception {
+	private Map<String, Object> getStudyConditionReport(String date) throws Exception {
 		HashMap<String, Object> condition = new HashMap<>();
 		int experienceLessons = 0;
 		int diagnosisLessons = 0;
@@ -246,7 +250,7 @@ public class MongoTest {
 		int noUseVoice = 0;
 		HashMap<String, Object> result = new HashMap<>();
 		// 正在上课的
-		List<RoomEventEntity> studyConditionReport = mongoDBService.studyConditionReport(condition, "2", "RoomEvent");
+		List<RoomEventEntity> studyConditionReport = mongoDBService.studyConditionReport(condition, "2", date, "RoomEvent");
 		Map<String, Object> coMap = new HashMap<String, Object>();
 		for (RoomEventEntity roomEventEntity : studyConditionReport) {
 			if (roomEventEntity.getTeacherName().indexOf("测试") > -1 || roomEventEntity.getStudentName().indexOf("测试") > -1) {
@@ -283,7 +287,7 @@ public class MongoTest {
 				studyInterruptTimes = reportStudyInterrupt(roomId);
 			}
 		}
-		List<RoomEventEntity> reviewRoomEventEntity = mongoDBService.studyConditionReport(condition, "3", "RoomEvent");
+		List<RoomEventEntity> reviewRoomEventEntity = mongoDBService.studyConditionReport(condition, "3", date, "RoomEvent");
 		for (RoomEventEntity roomEventEntity : reviewRoomEventEntity) {
 			if (roomEventEntity.getTeacherName().indexOf("测试") > -1 || roomEventEntity.getStudentName().indexOf("测试") > -1) {
 				continue;
@@ -383,6 +387,15 @@ public class MongoTest {
 			System.out.println(mongoDBService.exportReport(null, null));
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+	}
+
+	// 周一运行此方法，发送上周每天上课情况邮件
+	@Test
+	public void testDate() throws Exception {
+		for (int i = -7; i < 0; i++) {
+			String formatDate = DateUtils.formatDate(DateUtils.nextDate(new Date(), DateType.DAY, i), "yyyy-MM-dd");
+			sendMailReport(formatDate);
 		}
 	}
 }

@@ -183,8 +183,8 @@ public class MongoDBController {
 
 	@RequestMapping("sendStudyConditionReport")
 	@ResponseBody
-	public Object sendStudyConditionReport() throws Exception {
-		Map<String, Object> studyConditionReport = getStudyConditionReport();
+	public Object sendStudyConditionReport(String date) throws Exception {
+		Map<String, Object> studyConditionReport = getStudyConditionReport(date);
 		// 准备邮件格式
 		StringBuffer sb = new StringBuffer();
 		sb.append("<table border=\"1\" >");
@@ -278,7 +278,7 @@ public class MongoDBController {
 		return resMap;
 	}
 
-	private Map<String, Object> getStudyConditionReport() throws Exception {
+	private Map<String, Object> getStudyConditionReport(String date) throws Exception {
 		HashMap<String, Object> condition = new HashMap<>();
 		int experienceLessons = 0;
 		int diagnosisLessons = 0;
@@ -293,7 +293,7 @@ public class MongoDBController {
 		int noUseVoice = 0;
 		HashMap<String, Object> result = new HashMap<>();
 		// 正在上课的
-		List<RoomEventEntity> studyConditionReport = mongoDBService.studyConditionReport(condition, "2", "RoomEvent");
+		List<RoomEventEntity> studyConditionReport = mongoDBService.studyConditionReport(condition, "2", date, "RoomEvent");
 		Map<String, Object> coMap = new HashMap<String, Object>();
 		for (RoomEventEntity roomEventEntity : studyConditionReport) {
 			if (roomEventEntity.getTeacherName().indexOf("测试") > -1 || roomEventEntity.getStudentName().indexOf("测试") > -1) {
@@ -330,7 +330,7 @@ public class MongoDBController {
 				studyInterruptTimes = reportStudyInterrupt(roomId);
 			}
 		}
-		List<RoomEventEntity> reviewRoomEventEntity = mongoDBService.studyConditionReport(condition, "3", "RoomEvent");
+		List<RoomEventEntity> reviewRoomEventEntity = mongoDBService.studyConditionReport(condition, "3", date, "RoomEvent");
 		for (RoomEventEntity roomEventEntity : reviewRoomEventEntity) {
 			if (roomEventEntity.getTeacherName().indexOf("测试") > -1 || roomEventEntity.getStudentName().indexOf("测试") > -1) {
 				continue;
