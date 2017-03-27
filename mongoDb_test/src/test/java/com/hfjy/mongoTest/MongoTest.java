@@ -29,6 +29,7 @@ package com.hfjy.mongoTest;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -390,12 +391,16 @@ public class MongoTest {
 		}
 	}
 
-	// 周一运行此方法，发送上周每天上课情况邮件
+	// 发送上周每天上课情况邮件
 	@Test
-	public void testDate() throws Exception {
+	public void sendWeekReport() throws Exception {
+		Calendar calendar = Calendar.getInstance();
+		calendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+		Date monday = calendar.getTime();
 		for (int i = -7; i < 0; i++) {
-			String formatDate = DateUtils.formatDate(DateUtils.nextDate(new Date(), DateType.DAY, i), "yyyy-MM-dd");
+			String formatDate = DateUtils.formatDate(DateUtils.nextDate(monday, DateType.DAY, i), "yyyy-MM-dd");
 			sendMailReport(formatDate);
 		}
 	}
+
 }
